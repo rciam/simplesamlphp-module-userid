@@ -106,13 +106,6 @@ class sspmod_userid_Auth_Process_OpaqueSmartID extends SimpleSAML_Auth_Processin
 	 */
 	private $_add_candidate = true;
 
-	/**
-	 * Attributes which should be added/appended.
-	 *
-	 * Associative array of arrays.
-	 */
-	private $attributes = array();
-
         /**
          * The scope of the generated ID attribute (optional).
          */
