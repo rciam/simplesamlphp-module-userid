@@ -171,7 +171,27 @@ class sspmod_userid_Auth_Process_OpaqueSmartID extends SimpleSAML_Auth_Processin
 		}
 	}
 
-	private function addID($attributes, $request) {
+	/**
+	 * Process request.
+         *
+         * @param array &$request  The request to process
+	 */
+	public function process(&$request) {
+		assert('is_array($request)');
+		assert('array_key_exists("Attributes", $request)');
+
+		$userId = $this->_generateUserId($request['Attributes'], $request);
+
+		if (isset($userId)) {
+			$request['Attributes'][$this->_id_attribute] = array($userId);
+			// TODO: Remove this in SSP 2.0
+			if ($this->_set_userid_attribute) {
+				$request['UserID'] = $userId;
+			}
+		}
+	}
+
+	private function _generateUserId($attributes, $request) {
 		foreach ($this->_candidates as $idCandidate) {
 			if (isset($attributes[$idCandidate][0])) {
                                 SimpleSAML_Logger::debug("Generating opaque user ID based on "
@@ -189,34 +209,11 @@ class sspmod_userid_Auth_Process_OpaqueSmartID extends SimpleSAML_Auth_Processin
 				return $hashedUID;
 			}
 		}
-		/*
-		* At this stage no usable id_candidate has been detected.
-		*/
+
+		// Throw error if we cannot generate User ID
 		throw new SimpleSAML_Error_Exception('This service needs at least one of the following
 		attributes to identity users: '.implode(', ', $this->_candidates).'. Unfortunately not
 		one of them was detected. Please ask your institution administrator to release one of
 		them, or try using another identity provider.');
-	}
-
-
-	/**
-	 * Apply filter to add or replace attributes.
-	 *
-	 * Add or replace existing attributes with the configured values.
-	 *
-	 * @param array &$request  The current request
-	 */
-	public function process(&$request) {
-		assert('is_array($request)');
-		assert('array_key_exists("Attributes", $request)');
-
-		$ID = $this->addID($request['Attributes'], $request);
-
-		if (isset($ID)) {
-			$request['Attributes'][$this->_id_attribute] = array($ID);
-			if ($this->_set_userid_attribute) {
-				$request['UserID'] = $ID;
-			}
-		}
 	}
 }
