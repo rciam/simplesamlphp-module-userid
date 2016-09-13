@@ -131,35 +131,35 @@ class sspmod_userid_Auth_Process_OpaqueSmartID extends SimpleSAML_Auth_Processin
 		if (array_key_exists('candidates', $config)) {
 			$this->_candidates = $config['candidates'];
 			if (!is_array($this->_candidates)) {
-				throw new Exception('HashedSmartID authproc configuration error: \'candidates\' should be an array.');
+				throw new Exception('OpaqueSmartID authproc configuration error: \'candidates\' should be an array.');
 			}
 		}
 
 		if (array_key_exists('id_attribute', $config)) {
 			$this->_id_attribute = $config['id_attribute'];
 			if (!is_string($this->_id_attribute)) {
-				throw new Exception('HashedSmartID authproc configuration error: \'id_attribute\' should be a string.');
+				throw new Exception('OpaqueSmartID authproc configuration error: \'id_attribute\' should be a string.');
 			}
 		}
 
 		if (array_key_exists('add_authority', $config)) {
 			$this->_add_authority = $config['add_authority'];
 			if (!is_bool($this->_add_authority)) {
-				throw new Exception('HashedSmartID authproc configuration error: \'add_authority\' should be a boolean.');
+				throw new Exception('OpaqueSmartID authproc configuration error: \'add_authority\' should be a boolean.');
 			}
 		}
 
 		if (array_key_exists('add_candidate', $config)) {
 			$this->_add_candidate = $config['add_candidate'];
 			if (!is_bool($this->_add_candidate)) {
-				throw new Exception('HashedSmartID authproc configuration error: \'add_candidate\' should be a boolean.');
+				throw new Exception('OpaqueSmartID authproc configuration error: \'add_candidate\' should be a boolean.');
 			}
 		}
 
 		if (array_key_exists('scope', $config)) {
 			$this->_scope = $config['scope'];
 			if (!is_string($this->_scope)) {
-				throw new Exception('HashedSmartID authproc configuration error: \'scope\' should be a string.');
+				throw new Exception('OpaqueSmartID authproc configuration error: \'scope\' should be a string.');
 			}
 		}
 
@@ -174,7 +174,7 @@ class sspmod_userid_Auth_Process_OpaqueSmartID extends SimpleSAML_Auth_Processin
 	private function addID($attributes, $request) {
 		foreach ($this->_candidates as $idCandidate) {
 			if (isset($attributes[$idCandidate][0])) {
-                                SimpleSAML_Logger::debug("Generating hashed ID based on "
+                                SimpleSAML_Logger::debug("Generating opaque user ID based on "
                                     .$idCandidate.':'.$attributes[$idCandidate][0]);
 				if(($this->_add_authority) && (isset($request['saml:AuthenticatingAuthority'][0]))) {
 					$smartID = ($this->_add_candidate ? $idCandidate.':' : '').$attributes[$idCandidate][0] . '!' . $request['saml:AuthenticatingAuthority'][0];
