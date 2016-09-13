@@ -32,7 +32,7 @@
  *     - `facebook_targetedID`
  *     - `windowslive_targetedID`
  *     - `twitter_targetedID`
- * - `id_attribute`. A string to use as the name of the newly added attribute. 
+ * - `id_attribute`: A string to use as the name of the newly added attribute. 
  *    Defaults to `smart_id`.
  * - `add_authority`: A boolean to indicate whether or not to append the SAML
  *   AuthenticatingAuthority to the resulting identifier. This can be useful to
@@ -46,6 +46,11 @@
  *   identifier. There is no default scope value; however, you should consider
  *   scoping the generated attribute for creating globally unique identifiers
  *   that can be used across infrastructures.
+ * - `set_userid_attribute`: A boolean to indicate whether or not to assign the
+ *   generated user identifier to the `UserID` state parameter. Defaults to 
+ *   `true`. If this is set to `false`, SSP will attempt to use the value of the
+ *   `eduPersonPrincipalName` attribute, leading to errors when the latter is
+ *   not available.
  *
  * The generated identifiers have the following form:
  *
@@ -111,6 +116,12 @@ class sspmod_userid_Auth_Process_OpaqueSmartID extends SimpleSAML_Auth_Processin
          */
         private $_scope;        
 
+	/**
+	 * Whether to assign the generated user identifier to the `UserID` 
+         * state parameter
+	 */
+	private $_set_userid_attribute = true;
+
 
 	public function __construct($config, $reserved) {
 		parent::__construct($config, $reserved);
@@ -152,6 +163,12 @@ class sspmod_userid_Auth_Process_OpaqueSmartID extends SimpleSAML_Auth_Processin
 			}
 		}
 
+		if (array_key_exists('set_userid_attribute', $config)) {
+			$this->_set_userid_attribute = $config['set_userid_attribute'];
+			if (!is_bool($this->_set_userid_attribute)) {
+				throw new Exception('OpaqueSmartID authproc configuration error: \'set_userid_attribute\' should be a boolean.');
+			}
+		}
 	}
 
 	private function addID($attributes, $request) {
@@ -197,6 +214,9 @@ class sspmod_userid_Auth_Process_OpaqueSmartID extends SimpleSAML_Auth_Processin
 
 		if (isset($ID)) {
 			$request['Attributes'][$this->_id_attribute] = array($ID);
+			if ($this->_set_userid_attribute) {
+				$request['UserID'] = $ID;
+			}
 		}
 	}
 }

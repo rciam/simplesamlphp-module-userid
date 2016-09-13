@@ -45,6 +45,11 @@ The following configuration options are available:
    identifier. There is no default scope value; however, you should consider
    scoping the generated attribute for creating globally unique identifiers
    that can be used across infrastructures.
+ * `set_userid_attribute`: A boolean to indicate whether or not to assign the
+    generated user identifier to the `UserID` state parameter. Defaults to 
+    `true`. If this is set to `false`, SSP will attempt to use the value of the
+    `eduPersonPrincipalName` attribute, leading to errors when the latter is
+    not available.
  
 The generated identifiers have the following form:
 ```
