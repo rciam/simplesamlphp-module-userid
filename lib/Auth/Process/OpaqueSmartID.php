@@ -188,14 +188,18 @@ class sspmod_userid_Auth_Process_OpaqueSmartID extends SimpleSAML_Auth_Processin
 			if ($this->_set_userid_attribute) {
 				$request['UserID'] = $userId;
 			}
-		}
+			return;
+	 	}
+		$this->_showError('NOATTRIBUTE', array('%ATTRIBUTES%' =>
+			'<ul><li>'.implode('</li><li>', $this->_candidates).'</li></ul>'));
 	}
 
 	private function _generateUserId($attributes, $request) {
 		foreach ($this->_candidates as $idCandidate) {
-			if (isset($attributes[$idCandidate][0])) {
-                                SimpleSAML_Logger::debug("Generating opaque user ID based on "
-                                    .$idCandidate.':'.$attributes[$idCandidate][0]);
+			if (!empty($attributes[$idCandidate][0])) {
+				
+				SimpleSAML_Logger::debug("[OpaqueSmartID] Generating opaque user ID based on "
+					.$idCandidate.': '.$attributes[$idCandidate][0]);
 				if(($this->_add_authority) && (isset($request['saml:AuthenticatingAuthority'][0]))) {
 					$smartID = ($this->_add_candidate ? $idCandidate.':' : '').$attributes[$idCandidate][0] . '!' . $request['saml:AuthenticatingAuthority'][0];
 				} else {
@@ -209,11 +213,16 @@ class sspmod_userid_Auth_Process_OpaqueSmartID extends SimpleSAML_Auth_Processin
 				return $hashedUID;
 			}
 		}
-
-		// Throw error if we cannot generate User ID
-		throw new SimpleSAML_Error_Exception('This service needs at least one of the following
-		attributes to identity users: '.implode(', ', $this->_candidates).'. Unfortunately not
-		one of them was detected. Please ask your institution administrator to release one of
-		them, or try using another identity provider.');
 	}
+
+	private function _showError($errorCode, $parameters)
+	{
+		$globalConfig = SimpleSAML_Configuration::getInstance();
+		$t = new SimpleSAML_XHTML_Template($globalConfig, 'userid:error.tpl.php');
+		$t->data['errorCode'] = $errorCode;
+$t->data['parameters'] = $parameters;
+		$t->show();
+exit();
+}
+
 }
