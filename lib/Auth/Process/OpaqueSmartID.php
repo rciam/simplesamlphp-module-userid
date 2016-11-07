@@ -197,13 +197,19 @@ class sspmod_userid_Auth_Process_OpaqueSmartID extends SimpleSAML_Auth_Processin
 	private function _generateUserId($attributes, $request) {
 		foreach ($this->_candidates as $idCandidate) {
 			if (!empty($attributes[$idCandidate][0])) {
-				
+				try {
+					$idValue = $this->_parseUserId($attributes[$idCandidate][0]);
+				} catch(Exception $e) {
+					SimpleSAML_Logger::warning("Failed to generate user ID based on candidate "
+						. $idCandidate . " attribute: " . $e->getMessage());
+					continue;
+				}
 				SimpleSAML_Logger::debug("[OpaqueSmartID] Generating opaque user ID based on "
-					.$idCandidate.': '.$attributes[$idCandidate][0]);
+					. $idCandidate . ': ' . $idValue);
 				if(($this->_add_authority) && (isset($request['saml:AuthenticatingAuthority'][0]))) {
-					$smartID = ($this->_add_candidate ? $idCandidate.':' : '').$attributes[$idCandidate][0] . '!' . $request['saml:AuthenticatingAuthority'][0];
+					$smartID = ($this->_add_candidate ? $idCandidate.':' : '') . $idValue . '!' . $request['saml:AuthenticatingAuthority'][0];
 				} else {
-					$smartID = ($this->_add_candidate ? $idCandidate.':' : '').$attributes[$idCandidate][0];
+					$smartID = ($this->_add_candidate ? $idCandidate.':' : '') . $idValue;
 				}
 				$salt = SimpleSAML\Utils\Config::getSecretSalt();
 				$hashedUID = hash("sha256", $smartID.'!'.$salt);
@@ -213,6 +219,24 @@ class sspmod_userid_Auth_Process_OpaqueSmartID extends SimpleSAML_Auth_Processin
 				return $hashedUID;
 			}
 		}
+	}
+
+	private function _parseUserId($attribute)
+	{
+		if (is_string($attribute) || is_int($attribute)) {
+			$idValue = $attribute;
+		} elseif (is_a($attribute, 'DOMNodeList') && $attribute->length === 1) {
+			$nameId = new SAML2_XML_saml_NameID($attribute->item(0));
+			if (isset($nameId->Format) && $nameId->Format === SAML2_Const::NAMEID_PERSISTENT && !empty($nameId->value)) {
+				$idValue = $nameId->value;
+			} else {
+				throw new Exception('Unsupported NameID format');
+			}
+		} else 	{
+			throw new Exception('Unsupported attribute value type: '
+				. get_class($attribute));
+		}
+		return $idValue;
 	}
 
 	private function _showError($errorCode, $parameters)
