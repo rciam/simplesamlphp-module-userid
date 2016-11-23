@@ -206,8 +206,13 @@ class sspmod_userid_Auth_Process_OpaqueSmartID extends SimpleSAML_Auth_Processin
 				}
 				SimpleSAML_Logger::debug("[OpaqueSmartID] Generating opaque user ID based on "
 					. $idCandidate . ': ' . $idValue);
-				if(($this->_add_authority) && (isset($request['saml:AuthenticatingAuthority'][0]))) {
-					$smartID = ($this->_add_candidate ? $idCandidate.':' : '') . $idValue . '!' . $request['saml:AuthenticatingAuthority'][0];
+				$authority = null;
+				if ($this->_add_authority) {
+					$authority = $this->_getAuthority($request);
+				}
+				if (!empty($authority)) {
+					SimpleSAML_Logger::debug("[OpaqueSmartID] authority=" . var_export($authority, true));
+					$smartID = ($this->_add_candidate ? $idCandidate.':' : '') . $idValue . '!' . $authority;
 				} else {
 					$smartID = ($this->_add_candidate ? $idCandidate.':' : '') . $idValue;
 				}
@@ -219,6 +224,14 @@ class sspmod_userid_Auth_Process_OpaqueSmartID extends SimpleSAML_Auth_Processin
 				return $hashedUID;
 			}
 		}
+	}
+
+	private function _getAuthority($request)
+	{
+		if (!empty($request['saml:AuthenticatingAuthority'])) {
+			return array_values(array_slice($request['saml:AuthenticatingAuthority'], -1))[0];
+		}
+		return null;
 	}
 
 	private function _parseUserId($attribute)
