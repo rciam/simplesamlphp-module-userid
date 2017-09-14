@@ -190,8 +190,9 @@ class sspmod_userid_Auth_Process_OpaqueSmartID extends SimpleSAML_Auth_Processin
 			}
 			return;
 	 	}
-		$this->_showError('NOATTRIBUTE', array('%ATTRIBUTES%' =>
-			'<ul><li>'.implode('</li><li>', $this->_candidates).'</li></ul>'));
+		$this->_showError('NOATTRIBUTE', array(
+                    '%ATTRIBUTES%' => '<ul><li>'.implode('</li><li>', $this->_candidates).'</li></ul>',
+                    '%IDP%' => $this->getIdPDisplayName($request)));
 	}
 
 	private function _generateUserId($attributes, $request) {
@@ -251,6 +252,25 @@ class sspmod_userid_Auth_Process_OpaqueSmartID extends SimpleSAML_Auth_Processin
 		}
 		return $idValue;
 	}
+
+        private function getIdPDisplayName($request) 
+        {
+            assert('array_key_exists("entityid", $request["Source"])');
+
+            // If the entitlement module is active on a bridge $request['saml:sp:IdP']
+            // will contain an entry id for the remote IdP.
+            if (!empty($request['saml:sp:IdP'])) {
+                $idpEntityId = $request['saml:sp:IdP'];
+                $idpMetadata = SimpleSAML_Metadata_MetaDataStorageHandler::getMetadataHandler()->getMetaData($idpEntityId, 'saml20-idp-remote');
+            } else {
+                $idpEntityId = $request['Source']['entityid'];
+                $idpMetadata = $request['Source'];
+            }
+            SimpleSAML_Logger::debug("[OpaqueSmartID] IdP="
+                . var_export($idpEntityId, true));
+
+            return $idpEntityId;
+        }
 
 	private function _showError($errorCode, $parameters)
 	{
