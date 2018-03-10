@@ -189,10 +189,14 @@ class sspmod_userid_Auth_Process_OpaqueSmartID extends SimpleSAML_Auth_Processin
                 $request['UserID'] = $userId;
             }
             return;
-         }
+        }
+        $baseUrl = SimpleSAML_Configuration::getInstance()->getString('baseurlpath'
+);
         $this->showError('NOATTRIBUTE', array(
-            '%ATTRIBUTES%' => '<ul><li>'.implode('</li><li>', $this->candidates).'</li></ul>',
-            '%IDP%' => $this->getIdPDisplayName($request)));
+            '%ATTRIBUTES%' => $this->candidates,
+            '%IDP%' => $this->getIdPDisplayName($request),
+            '%BASEDIR%' => $baseUrl,
+            '%RESTARTURL%' => $request[SimpleSAML_Auth_State::RESTART]));
     }
 
     private function generateUserId($attributes, $request) {
@@ -258,8 +262,8 @@ class sspmod_userid_Auth_Process_OpaqueSmartID extends SimpleSAML_Auth_Processin
     {
         assert('array_key_exists("entityid", $request["Source"])');
 
-        // If the entitlement module is active on a bridge $request['saml:sp:IdP']
-        // will contain an entry id for the remote IdP.
+        // If the module is active on a bridge,
+        // $request['saml:sp:IdP'] will contain an entry id for the remote IdP.
         if (!empty($request['saml:sp:IdP'])) {
             $idpEntityId = $request['saml:sp:IdP'];
             $idpMetadata = SimpleSAML_Metadata_MetaDataStorageHandler::getMetadataHandler()->getMetaData($idpEntityId, 'saml20-idp-remote');
@@ -267,8 +271,27 @@ class sspmod_userid_Auth_Process_OpaqueSmartID extends SimpleSAML_Auth_Processin
             $idpEntityId = $request['Source']['entityid'];
             $idpMetadata = $request['Source'];
         }
-        SimpleSAML_Logger::debug("[OpaqueSmartID] IdP="
-            . var_export($idpEntityId, true));
+
+        if (!empty($idpMetadata['UIInfo']['DisplayName'])) {
+            $displayName = $idpMetadata['UIInfo']['DisplayName'];
+            // Should always be an array of language code -> translation
+            assert('is_array($displayName)');
+            // TODO: Use \SimpleSAML\Locale\Translate::getPreferredTranslation()
+            // in SSP 2.0
+            if (!empty($displayName['en'])) {
+                return $displayName['en'];
+            }
+        }
+
+        if (!empty($idpMetadata['name'])) {
+            // TODO: Use \SimpleSAML\Locale\Translate::getPreferredTranslation()
+            // in SSP 2.0
+            if (!empty($idpMetadata['name']['en'])) {
+                return $idpMetadata['name']['en'];
+            } else {
+                return $idpMetadata['name'];
+            }
+        }
 
         return $idpEntityId;
     }
