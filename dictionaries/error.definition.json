@@ -6,7 +6,7 @@
 		"en": "Oops! Something went wrong"
 	},
 	"descr_NOATTRIBUTE": {
-		"en": "Your identity provider, <strong>%IDP%</strong>, did not provide a unique user identifier. Please, ask your institution administrator to release a persistent unique user identifier, or try to log in with a different identity provider."
+		"en": "<strong>%IDP%</strong> did not provide a persistent identifier to help us uniquely identify you. Please, ask your institution administrator to release a persistent unique user identifier, or try to log in with a different identity provider."
 	},
 	"retry": {
 		"en": "Try again"
