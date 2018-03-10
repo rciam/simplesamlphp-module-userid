@@ -84,7 +84,7 @@ class sspmod_userid_Auth_Process_OpaqueSmartID extends SimpleSAML_Auth_Processin
 	/**
 	 * The list of candidate attribute(s) to be used for the new ID attribute.
 	 */
-	private $_candidates = array(
+	private $candidates = array(
 		'eduPersonUniqueId',
 		'eduPersonPrincipalName',
 		'eduPersonTargetedID',
@@ -98,29 +98,29 @@ class sspmod_userid_Auth_Process_OpaqueSmartID extends SimpleSAML_Auth_Processin
 	/**
 	 * The name of the generated ID attribute.
 	 */
-	private $_id_attribute = 'smart_id';
+	private $idAttribute = 'smart_id';
 
 	/**
 	 * Whether to append the AuthenticatingAuthority, separated by '!'
 	 * This only works when SSP is used as a gateway.
 	 */
-	private $_add_authority = true;
+	private $addAuthority = true;
 
 	/**
 	 * Whether to prepend the CandidateID, separated by ':'
 	 */
-	private $_add_candidate = true;
+	private $addCandidate = true;
 
         /**
          * The scope of the generated ID attribute (optional).
          */
-        private $_scope;        
+        private $scope;        
 
 	/**
 	 * Whether to assign the generated user identifier to the `UserID` 
          * state parameter
 	 */
-	private $_set_userid_attribute = true;
+	private $setUserIdAttribute = true;
 
 
 	public function __construct($config, $reserved) {
@@ -129,43 +129,43 @@ class sspmod_userid_Auth_Process_OpaqueSmartID extends SimpleSAML_Auth_Processin
 		assert('is_array($config)');
 
 		if (array_key_exists('candidates', $config)) {
-			$this->_candidates = $config['candidates'];
-			if (!is_array($this->_candidates)) {
+			$this->candidates = $config['candidates'];
+			if (!is_array($this->candidates)) {
 				throw new Exception('OpaqueSmartID authproc configuration error: \'candidates\' should be an array.');
 			}
 		}
 
 		if (array_key_exists('id_attribute', $config)) {
-			$this->_id_attribute = $config['id_attribute'];
-			if (!is_string($this->_id_attribute)) {
+			$this->idAttribute = $config['id_attribute'];
+			if (!is_string($this->idAttribute)) {
 				throw new Exception('OpaqueSmartID authproc configuration error: \'id_attribute\' should be a string.');
 			}
 		}
 
 		if (array_key_exists('add_authority', $config)) {
-			$this->_add_authority = $config['add_authority'];
-			if (!is_bool($this->_add_authority)) {
+			$this->addAuthority = $config['add_authority'];
+			if (!is_bool($this->addAuthority)) {
 				throw new Exception('OpaqueSmartID authproc configuration error: \'add_authority\' should be a boolean.');
 			}
 		}
 
 		if (array_key_exists('add_candidate', $config)) {
-			$this->_add_candidate = $config['add_candidate'];
-			if (!is_bool($this->_add_candidate)) {
+			$this->addCandidate = $config['add_candidate'];
+			if (!is_bool($this->addCandidate)) {
 				throw new Exception('OpaqueSmartID authproc configuration error: \'add_candidate\' should be a boolean.');
 			}
 		}
 
 		if (array_key_exists('scope', $config)) {
-			$this->_scope = $config['scope'];
-			if (!is_string($this->_scope)) {
+			$this->scope = $config['scope'];
+			if (!is_string($this->scope)) {
 				throw new Exception('OpaqueSmartID authproc configuration error: \'scope\' should be a string.');
 			}
 		}
 
 		if (array_key_exists('set_userid_attribute', $config)) {
-			$this->_set_userid_attribute = $config['set_userid_attribute'];
-			if (!is_bool($this->_set_userid_attribute)) {
+			$this->setUserIdAttribute = $config['set_userid_attribute'];
+			if (!is_bool($this->setUserIdAttribute)) {
 				throw new Exception('OpaqueSmartID authproc configuration error: \'set_userid_attribute\' should be a boolean.');
 			}
 		}
@@ -180,26 +180,26 @@ class sspmod_userid_Auth_Process_OpaqueSmartID extends SimpleSAML_Auth_Processin
 		assert('is_array($request)');
 		assert('array_key_exists("Attributes", $request)');
 
-		$userId = $this->_generateUserId($request['Attributes'], $request);
+		$userId = $this->generateUserId($request['Attributes'], $request);
 
 		if (isset($userId)) {
-			$request['Attributes'][$this->_id_attribute] = array($userId);
+			$request['Attributes'][$this->idAttribute] = array($userId);
 			// TODO: Remove this in SSP 2.0
-			if ($this->_set_userid_attribute) {
+			if ($this->setUserIdAttribute) {
 				$request['UserID'] = $userId;
 			}
 			return;
 	 	}
-		$this->_showError('NOATTRIBUTE', array(
-                    '%ATTRIBUTES%' => '<ul><li>'.implode('</li><li>', $this->_candidates).'</li></ul>',
+		$this->showError('NOATTRIBUTE', array(
+                    '%ATTRIBUTES%' => '<ul><li>'.implode('</li><li>', $this->candidates).'</li></ul>',
                     '%IDP%' => $this->getIdPDisplayName($request)));
 	}
 
-	private function _generateUserId($attributes, $request) {
-		foreach ($this->_candidates as $idCandidate) {
+	private function generateUserId($attributes, $request) {
+		foreach ($this->candidates as $idCandidate) {
 			if (!empty($attributes[$idCandidate][0])) {
 				try {
-					$idValue = $this->_parseUserId($attributes[$idCandidate][0]);
+					$idValue = $this->parseUserId($attributes[$idCandidate][0]);
 				} catch(Exception $e) {
 					SimpleSAML_Logger::warning("Failed to generate user ID based on candidate "
 						. $idCandidate . " attribute: " . $e->getMessage());
@@ -208,26 +208,26 @@ class sspmod_userid_Auth_Process_OpaqueSmartID extends SimpleSAML_Auth_Processin
 				SimpleSAML_Logger::debug("[OpaqueSmartID] Generating opaque user ID based on "
 					. $idCandidate . ': ' . $idValue);
 				$authority = null;
-				if ($this->_add_authority) {
-					$authority = $this->_getAuthority($request);
+				if ($this->addAuthority) {
+					$authority = $this->getAuthority($request);
 				}
 				if (!empty($authority)) {
 					SimpleSAML_Logger::debug("[OpaqueSmartID] authority=" . var_export($authority, true));
-					$smartID = ($this->_add_candidate ? $idCandidate.':' : '') . $idValue . '!' . $authority;
+					$smartID = ($this->addCandidate ? $idCandidate.':' : '') . $idValue . '!' . $authority;
 				} else {
-					$smartID = ($this->_add_candidate ? $idCandidate.':' : '') . $idValue;
+					$smartID = ($this->addCandidate ? $idCandidate.':' : '') . $idValue;
 				}
 				$salt = SimpleSAML\Utils\Config::getSecretSalt();
 				$hashedUID = hash("sha256", $smartID.'!'.$salt);
-				if (isset($this->_scope)) {
-					return $hashedUID.'@'.$this->_scope;
+				if (isset($this->scope)) {
+					return $hashedUID.'@'.$this->scope;
 				}
 				return $hashedUID;
 			}
 		}
 	}
 
-	private function _getAuthority($request)
+	private function getAuthority($request)
 	{
 		if (!empty($request['saml:AuthenticatingAuthority'])) {
 			return array_values(array_slice($request['saml:AuthenticatingAuthority'], -1))[0];
@@ -235,7 +235,7 @@ class sspmod_userid_Auth_Process_OpaqueSmartID extends SimpleSAML_Auth_Processin
 		return null;
 	}
 
-	private function _parseUserId($attribute)
+	private function parseUserId($attribute)
 	{
 		if (is_string($attribute) || is_int($attribute)) {
 			$idValue = $attribute;
@@ -272,7 +272,7 @@ class sspmod_userid_Auth_Process_OpaqueSmartID extends SimpleSAML_Auth_Processin
             return $idpEntityId;
         }
 
-	private function _showError($errorCode, $parameters)
+	private function showError($errorCode, $parameters)
 	{
 		$globalConfig = SimpleSAML_Configuration::getInstance();
 		$t = new SimpleSAML_XHTML_Template($globalConfig, 'userid:error.tpl.php');
