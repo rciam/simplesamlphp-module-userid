@@ -197,33 +197,34 @@ class sspmod_userid_Auth_Process_OpaqueSmartID extends SimpleSAML_Auth_Processin
 
     private function generateUserId($attributes, $request) {
         foreach ($this->candidates as $idCandidate) {
-            if (!empty($attributes[$idCandidate][0])) {
-                try {
-                    $idValue = $this->parseUserId($attributes[$idCandidate][0]);
-                } catch(Exception $e) {
-                    SimpleSAML_Logger::warning("Failed to generate user ID based on candidate "
-                        . $idCandidate . " attribute: " . $e->getMessage());
-                    continue;
-                }
-                SimpleSAML_Logger::debug("[OpaqueSmartID] Generating opaque user ID based on "
-                    . $idCandidate . ': ' . $idValue);
-                $authority = null;
-                if ($this->addAuthority) {
-                    $authority = $this->getAuthority($request);
-                }
-                if (!empty($authority)) {
-                    SimpleSAML_Logger::debug("[OpaqueSmartID] authority=" . var_export($authority, true));
-                    $smartID = ($this->addCandidate ? $idCandidate.':' : '') . $idValue . '!' . $authority;
-                } else {
-                    $smartID = ($this->addCandidate ? $idCandidate.':' : '') . $idValue;
-                }
-                $salt = SimpleSAML\Utils\Config::getSecretSalt();
-                $hashedUID = hash("sha256", $smartID.'!'.$salt);
-                if (isset($this->scope)) {
-                    return $hashedUID.'@'.$this->scope;
-                }
-                return $hashedUID;
+            if (empty($attributes[$idCandidate][0])) {
+                continue;
             }
+            try {
+                $idValue = $this->parseUserId($attributes[$idCandidate][0]);
+            } catch(Exception $e) {
+                SimpleSAML_Logger::warning("Failed to generate user ID based on candidate "
+                    . $idCandidate . " attribute: " . $e->getMessage());
+                continue;
+            }
+            SimpleSAML_Logger::debug("[OpaqueSmartID] Generating opaque user ID based on "
+                . $idCandidate . ': ' . $idValue);
+            $authority = null;
+            if ($this->addAuthority) {
+                $authority = $this->getAuthority($request);
+            }
+            if (!empty($authority)) {
+                SimpleSAML_Logger::debug("[OpaqueSmartID] authority=" . var_export($authority, true));
+                $smartID = ($this->addCandidate ? $idCandidate.':' : '') . $idValue . '!' . $authority;
+            } else {
+                $smartID = ($this->addCandidate ? $idCandidate.':' : '') . $idValue;
+            }
+            $salt = SimpleSAML\Utils\Config::getSecretSalt();
+            $hashedUID = hash("sha256", $smartID.'!'.$salt);
+            if (isset($this->scope)) {
+                return $hashedUID.'@'.$this->scope;
+            }
+            return $hashedUID;
         }
     }
 
