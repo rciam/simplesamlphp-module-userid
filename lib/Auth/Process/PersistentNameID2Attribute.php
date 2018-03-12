@@ -59,6 +59,10 @@ class sspmod_userid_Auth_Process_PersistentNameID2Attribute extends SimpleSAML_A
     {
         assert('is_array($state)');
 
+        if (!empty($state['Attributes'][$this->attribute])) {
+            return;
+        }
+
         if (!isset($state['saml:sp:NameID']) || $state['saml:sp:NameID']['Format'] !== SAML2_Const::NAMEID_PERSISTENT) {
             SimpleSAML_Logger::warning(
                 'Unable to generate ' . $this->attribute 
