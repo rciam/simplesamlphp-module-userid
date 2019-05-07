@@ -1,5 +1,7 @@
 <?php
 
+namespace SimpleSAML\Module\userid\Auth\Process;
+
 /**
  * A SimpleSAMLphp authentication processing filter for generating long-lived, 
  * non-reassignable, non-targeted, opaque and globally unique user identifiers
@@ -79,7 +81,7 @@
  *
  * @author Nicolas Liampotis <nliam@grnet.gr>
  */
-class sspmod_userid_Auth_Process_OpaqueSmartID extends SimpleSAML_Auth_ProcessingFilter {
+class OpaqueSmartID extends \SimpleSAML\Auth\ProcessingFilter {
 
     /**
      * The list of candidate attribute(s) to be used for the new ID attribute.
