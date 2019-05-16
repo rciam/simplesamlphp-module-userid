@@ -88,7 +88,8 @@ use SimpleSAML\Utils\Config;
  *
  * @author Nicolas Liampotis <nliam@grnet.gr>
  */
-class OpaqueSmartID extends \SimpleSAML\Auth\ProcessingFilter {
+class OpaqueSmartID extends \SimpleSAML\Auth\ProcessingFilter
+{
 
     /**
      * The list of candidate attribute(s) to be used for the new ID attribute.
@@ -132,7 +133,8 @@ class OpaqueSmartID extends \SimpleSAML\Auth\ProcessingFilter {
     private $setUserIdAttribute = true;
 
 
-    public function __construct($config, $reserved) {
+    public function __construct($config, $reserved)
+    {
         parent::__construct($config, $reserved);
 
         assert('is_array($config)');
@@ -185,7 +187,8 @@ class OpaqueSmartID extends \SimpleSAML\Auth\ProcessingFilter {
      *
      * @param array &$request  The request to process
      */
-    public function process(&$request) {
+    public function process(&$request)
+    {
         assert('is_array($request)');
         assert('array_key_exists("Attributes", $request)');
 
@@ -207,7 +210,8 @@ class OpaqueSmartID extends \SimpleSAML\Auth\ProcessingFilter {
             '%RESTARTURL%' => $request[State::RESTART]));
     }
 
-    private function generateUserId($attributes, $request) {
+    private function generateUserId($attributes, $request)
+    {
         foreach ($this->candidates as $idCandidate) {
             if (empty($attributes[$idCandidate][0])) {
                 continue;
@@ -259,7 +263,7 @@ class OpaqueSmartID extends \SimpleSAML\Auth\ProcessingFilter {
             } else {
                 throw new \Exception('Unsupported NameID format');
             }
-        } else     {
+        } else {
             throw new \Exception('Unsupported attribute value type: '
                 . get_class($attribute));
         }
