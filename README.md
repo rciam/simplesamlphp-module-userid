@@ -63,20 +63,20 @@ SHA-256(AttributeName:AttributeValue!AuthenticatingAuthority!SecretSalt)@scope
 ### Example configuration:
  
 ```
-authproc = array(
+authproc = [
     ...
-    '60' => array(
+    '60' => [
         'class' => 'uid:OpaqueSmartID',
-        'candidates' => array(
+        'candidates' => [
             'eduPersonUniqueId',
             'eduPersonPrincipalName',
             'eduPersonTargetedID',
-        ),
+        ],
         'id_attribute' => 'eduPersonUniqueId',
         'add_candidate' => false,
         'add_authority' => true,   
         'scope' => 'example.org',
-    ),
+    ],
 ```
 
 ## License

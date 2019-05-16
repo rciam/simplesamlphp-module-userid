@@ -71,20 +71,20 @@ use SimpleSAML\Utils\Config;
  * 
  * Example configuration:
  *
- *    authproc = array(
+ *    authproc = [
  *       ...
- *       '60' => array(
+ *       '60' => [
  *           'class' => 'uid:OpaqueSmartID',
- *           'candidates' => array(
+ *           'candidates' => [
  *               'eduPersonUniqueId',
  *               'eduPersonPrincipalName',
  *               'eduPersonTargetedID',
- *           ),
+ *           ],
  *           'id_attribute' => 'eduPersonUniqueId',
  *           'add_candidate' => false,
  *           'add_authority' => true,
  *           'scope' => 'example.org',
- *       ),
+ *       ],
  *
  * @author Nicolas Liampotis <nliam@grnet.gr>
  */
@@ -94,7 +94,7 @@ class OpaqueSmartID extends \SimpleSAML\Auth\ProcessingFilter
     /**
      * The list of candidate attribute(s) to be used for the new ID attribute.
      */
-    private $candidates = array(
+    private $candidates = [
         'eduPersonUniqueId',
         'eduPersonPrincipalName',
         'eduPersonTargetedID',
@@ -103,7 +103,7 @@ class OpaqueSmartID extends \SimpleSAML\Auth\ProcessingFilter
         'facebook_targetedID',
         'windowslive_targetedID',
         'twitter_targetedID',
-    );
+    ];
 
     /**
      * The name of the generated ID attribute.
@@ -195,7 +195,7 @@ class OpaqueSmartID extends \SimpleSAML\Auth\ProcessingFilter
         $userId = $this->generateUserId($request['Attributes'], $request);
 
         if (isset($userId)) {
-            $request['Attributes'][$this->idAttribute] = array($userId);
+            $request['Attributes'][$this->idAttribute] = [$userId];
             // TODO: Remove this in SSP 2.0
             if ($this->setUserIdAttribute) {
                 $request['UserID'] = $userId;
@@ -203,11 +203,12 @@ class OpaqueSmartID extends \SimpleSAML\Auth\ProcessingFilter
             return;
         }
         $baseUrl = Configuration::getInstance()->getString('baseurlpath');
-        $this->showError('NOATTRIBUTE', array(
+        $this->showError('NOATTRIBUTE', [
             '%ATTRIBUTES%' => $this->candidates,
             '%IDP%' => $this->getIdPDisplayName($request),
             '%BASEDIR%' => $baseUrl,
-            '%RESTARTURL%' => $request[State::RESTART]));
+            '%RESTARTURL%' => $request[State::RESTART]
+        ]);
     }
 
     private function generateUserId($attributes, $request)

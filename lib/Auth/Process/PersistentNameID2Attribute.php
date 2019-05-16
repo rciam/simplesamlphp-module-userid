@@ -86,6 +86,6 @@ class PersistentNameID2Attribute extends \SimpleSAML\Auth\ProcessingFilter
             $value = $nameID['Value'];
         }
 
-        $state['Attributes'][$this->attribute] = array($value);
+        $state['Attributes'][$this->attribute] = [$value];
     }
 }
