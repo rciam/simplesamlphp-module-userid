@@ -2,6 +2,8 @@
 
 namespace SimpleSAML\Module\userid\Auth\Process;
 
+use SimpleSAML\Logger;
+
 /**
  * Authentication processing filter for generating an attribute from the persistent NameID.
  *
@@ -65,7 +67,7 @@ class PersistentNameID2Attribute extends \SimpleSAML\Auth\ProcessingFilter
         }
 
         if (!isset($state['saml:sp:NameID']) || $state['saml:sp:NameID']['Format'] !== SAML2_Const::NAMEID_PERSISTENT) {
-            SimpleSAML_Logger::warning(
+            Logger::warning(
                 'Unable to generate ' . $this->attribute 
                 . ' attribute because no persistent NameID was available.'
             );

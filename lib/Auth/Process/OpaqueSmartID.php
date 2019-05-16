@@ -2,6 +2,13 @@
 
 namespace SimpleSAML\Module\userid\Auth\Process;
 
+use SimpleSAML\Auth\State;
+use SimpleSAML\Configuration;
+use SimpleSAML\Logger;
+use SimpleSAML\Metadata\MetaDataStorageHandler;
+use SimpleSAML\XHTML\Template;
+use SimpleSAML\Utils\Config;
+
 /**
  * A SimpleSAMLphp authentication processing filter for generating long-lived, 
  * non-reassignable, non-targeted, opaque and globally unique user identifiers
@@ -133,42 +140,42 @@ class OpaqueSmartID extends \SimpleSAML\Auth\ProcessingFilter {
         if (array_key_exists('candidates', $config)) {
             $this->candidates = $config['candidates'];
             if (!is_array($this->candidates)) {
-                throw new Exception('OpaqueSmartID authproc configuration error: \'candidates\' should be an array.');
+                throw new \Exception('OpaqueSmartID authproc configuration error: \'candidates\' should be an array.');
             }
         }
 
         if (array_key_exists('id_attribute', $config)) {
             $this->idAttribute = $config['id_attribute'];
             if (!is_string($this->idAttribute)) {
-                throw new Exception('OpaqueSmartID authproc configuration error: \'id_attribute\' should be a string.');
+                throw new \Exception('OpaqueSmartID authproc configuration error: \'id_attribute\' should be a string.');
             }
         }
 
         if (array_key_exists('add_authority', $config)) {
             $this->addAuthority = $config['add_authority'];
             if (!is_bool($this->addAuthority)) {
-                throw new Exception('OpaqueSmartID authproc configuration error: \'add_authority\' should be a boolean.');
+                throw new \Exception('OpaqueSmartID authproc configuration error: \'add_authority\' should be a boolean.');
             }
         }
 
         if (array_key_exists('add_candidate', $config)) {
             $this->addCandidate = $config['add_candidate'];
             if (!is_bool($this->addCandidate)) {
-                throw new Exception('OpaqueSmartID authproc configuration error: \'add_candidate\' should be a boolean.');
+                throw new \Exception('OpaqueSmartID authproc configuration error: \'add_candidate\' should be a boolean.');
             }
         }
 
         if (array_key_exists('scope', $config)) {
             $this->scope = $config['scope'];
             if (!is_string($this->scope)) {
-                throw new Exception('OpaqueSmartID authproc configuration error: \'scope\' should be a string.');
+                throw new \Exception('OpaqueSmartID authproc configuration error: \'scope\' should be a string.');
             }
         }
 
         if (array_key_exists('set_userid_attribute', $config)) {
             $this->setUserIdAttribute = $config['set_userid_attribute'];
             if (!is_bool($this->setUserIdAttribute)) {
-                throw new Exception('OpaqueSmartID authproc configuration error: \'set_userid_attribute\' should be a boolean.');
+                throw new \Exception('OpaqueSmartID authproc configuration error: \'set_userid_attribute\' should be a boolean.');
             }
         }
     }
@@ -192,13 +199,12 @@ class OpaqueSmartID extends \SimpleSAML\Auth\ProcessingFilter {
             }
             return;
         }
-        $baseUrl = SimpleSAML_Configuration::getInstance()->getString('baseurlpath'
-);
+        $baseUrl = Configuration::getInstance()->getString('baseurlpath');
         $this->showError('NOATTRIBUTE', array(
             '%ATTRIBUTES%' => $this->candidates,
             '%IDP%' => $this->getIdPDisplayName($request),
             '%BASEDIR%' => $baseUrl,
-            '%RESTARTURL%' => $request[SimpleSAML_Auth_State::RESTART]));
+            '%RESTARTURL%' => $request[State::RESTART]));
     }
 
     private function generateUserId($attributes, $request) {
@@ -208,24 +214,24 @@ class OpaqueSmartID extends \SimpleSAML\Auth\ProcessingFilter {
             }
             try {
                 $idValue = $this->parseUserId($attributes[$idCandidate][0]);
-            } catch(Exception $e) {
-                SimpleSAML_Logger::warning("Failed to generate user ID based on candidate "
+            } catch(\Exception $e) {
+                Logger::warning("Failed to generate user ID based on candidate "
                     . $idCandidate . " attribute: " . $e->getMessage());
                 continue;
             }
-            SimpleSAML_Logger::debug("[OpaqueSmartID] Generating opaque user ID based on "
+            Logger::debug("[OpaqueSmartID] Generating opaque user ID based on "
                 . $idCandidate . ': ' . $idValue);
             $authority = null;
             if ($this->addAuthority) {
                 $authority = $this->getAuthority($request);
             }
             if (!empty($authority)) {
-                SimpleSAML_Logger::debug("[OpaqueSmartID] authority=" . var_export($authority, true));
+                Logger::debug("[OpaqueSmartID] authority=" . var_export($authority, true));
                 $smartID = ($this->addCandidate ? $idCandidate.':' : '') . $idValue . '!' . $authority;
             } else {
                 $smartID = ($this->addCandidate ? $idCandidate.':' : '') . $idValue;
             }
-            $salt = SimpleSAML\Utils\Config::getSecretSalt();
+            $salt = Config::getSecretSalt();
             $hashedUID = hash("sha256", $smartID.'!'.$salt);
             if (isset($this->scope)) {
                 return $hashedUID.'@'.$this->scope;
@@ -251,10 +257,10 @@ class OpaqueSmartID extends \SimpleSAML\Auth\ProcessingFilter {
             if (isset($nameId->Format) && $nameId->Format === SAML2_Const::NAMEID_PERSISTENT && !empty($nameId->value)) {
                 $idValue = $nameId->value;
             } else {
-                throw new Exception('Unsupported NameID format');
+                throw new \Exception('Unsupported NameID format');
             }
         } else     {
-            throw new Exception('Unsupported attribute value type: '
+            throw new \Exception('Unsupported attribute value type: '
                 . get_class($attribute));
         }
         return $idValue;
@@ -268,7 +274,7 @@ class OpaqueSmartID extends \SimpleSAML\Auth\ProcessingFilter {
         // $request['saml:sp:IdP'] will contain an entry id for the remote IdP.
         if (!empty($request['saml:sp:IdP'])) {
             $idpEntityId = $request['saml:sp:IdP'];
-            $idpMetadata = SimpleSAML_Metadata_MetaDataStorageHandler::getMetadataHandler()->getMetaData($idpEntityId, 'saml20-idp-remote');
+            $idpMetadata = MetaDataStorageHandler::getMetadataHandler()->getMetaData($idpEntityId, 'saml20-idp-remote');
         } else {
             $idpEntityId = $request['Source']['entityid'];
             $idpMetadata = $request['Source'];
@@ -300,8 +306,8 @@ class OpaqueSmartID extends \SimpleSAML\Auth\ProcessingFilter {
 
     private function showError($errorCode, $parameters)
     {
-        $globalConfig = SimpleSAML_Configuration::getInstance();
-        $t = new SimpleSAML_XHTML_Template($globalConfig, 'userid:error.tpl.php');
+        $globalConfig = Configuration::getInstance();
+        $t = new Template($globalConfig, 'userid:error.tpl.php');
         $t->data['errorCode'] = $errorCode;
         $t->data['parameters'] = $parameters;
         $t->show();
