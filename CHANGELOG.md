@@ -14,6 +14,7 @@ This version is compatible with [SimpleSAMLphp v1.14](https://simplesamlphp.org/
 - OpaqueSmartID class
   - Provides consistent user identifiers
   - Support for SAML 2.0 Persistent NameIDs/ePTIDs
+  - List of IdP entityIDs that should be excluded from the authority part of the user id source.
 - PersistentNameID2Attribute class
   - Generates an attribute from the persistent NameID
 - Use template for error page
