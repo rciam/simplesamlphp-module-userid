@@ -63,26 +63,17 @@ class sspmod_userid_Auth_Process_PersistentNameID2Attribute extends SimpleSAML_A
             return;
         }
 
-        if (!isset($state['saml:sp:NameID']) || $state['saml:sp:NameID']['Format'] !== SAML2_Const::NAMEID_PERSISTENT) {
-            SimpleSAML_Logger::warning(
+        if (!isset($state['saml:sp:NameID']) || $state['saml:sp:NameID']->Format !== \SAML2\Constants::NAMEID_PERSISTENT) {
+            SimpleSAML\Logger::warning(
                 'Unable to generate ' . $this->attribute 
                 . ' attribute because no persistent NameID was available.'
             );
             return;
         }
 
+        // @var \SAML2\XML\saml\NameID $nameID
         $nameID = $state['saml:sp:NameID'];
 
-        if ($this->nameId) {
-            $doc = SAML2_DOMDocumentFactory::create();
-            $root = $doc->createElement('root');
-            $doc->appendChild($root);
-            SAML2_Utils::addNameId($root, $nameID);
-            $value = $doc->saveXML($root->firstChild);
-        } else {
-            $value = $nameID['Value'];
-        }
-
-        $state['Attributes'][$this->attribute] = array($value);
+        $state['Attributes'][$this->attribute] = array((!$this->nameId) ? $nameID->value : $nameID);
     }
 }

@@ -12,6 +12,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - OpaqueSmartID class
   - List of tags that should be excluded from the authority part of the user id source.
 
+### Changed
+
+- Required changes to support SimpleSAMLphp v1.15
+
 ## [v1.0.0] - 2019-09-10
 
 This version is compatible with [SimpleSAMLphp v1.14](https://simplesamlphp.org/docs/1.14/simplesamlphp-changelog)
