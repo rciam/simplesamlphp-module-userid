@@ -52,6 +52,8 @@ The following configuration options are available:
     not available.
  * `skip_authority_list`: Optional, an array of IdP entityIDs that should be 
     excluded from the authority part of the user id source.
+ * `skip_tag_list`: Optional, an array of tags that should be 
+    excluded from the authority part of the user id source.
  
 The generated identifiers have the following form:
 ```
@@ -81,6 +83,10 @@ authproc = array(
         'skip_authority_list' => array(
             'https://www.example1.org',
             'https://www.example2.org',
+        ),
+        'skip_tag_list' => array(
+            'example1',
+            'example2',
         ),
     ),
 ```
