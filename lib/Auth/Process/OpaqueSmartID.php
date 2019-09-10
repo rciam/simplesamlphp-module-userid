@@ -75,11 +75,19 @@
  *           'add_candidate' => false,
  *           'add_authority' => true,
  *           'scope' => 'example.org',
+ *           'skip_authority_list' => array(
+ *               'https://www.example1.org',
+ *               'https://www.example2.org',
+ *           ),
  *       ),
  *
  * @author Nicolas Liampotis <nliam@grnet.gr>
  */
 class sspmod_userid_Auth_Process_OpaqueSmartID extends SimpleSAML_Auth_ProcessingFilter {
+
+    // List of IdP entityIDs that should be excluded from the authority
+    // part of the user id source.
+    private $skipAuthorityList = array();
 
     /**
      * The list of candidate attribute(s) to be used for the new ID attribute.
@@ -127,6 +135,13 @@ class sspmod_userid_Auth_Process_OpaqueSmartID extends SimpleSAML_Auth_Processin
         parent::__construct($config, $reserved);
 
         assert('is_array($config)');
+
+        if (array_key_exists('skip_authority_list', $config)) {
+            $this->skipAuthorityList = $config['skip_authority_list'];
+            if (!is_array($this->skipAuthorityList)) {
+                throw new Exception('OpaqueSmartID authproc configuration error: \'skip_authority_list\' should be an array.');
+            }
+        }
 
         if (array_key_exists('candidates', $config)) {
             $this->candidates = $config['candidates'];
@@ -217,7 +232,7 @@ class sspmod_userid_Auth_Process_OpaqueSmartID extends SimpleSAML_Auth_Processin
             if ($this->addAuthority) {
                 $authority = $this->getAuthority($request);
             }
-            if (!empty($authority)) {
+            if (!empty($authority) && !in_array($authority, $this->skipAuthorityList, true)) {
                 SimpleSAML_Logger::debug("[OpaqueSmartID] authority=" . var_export($authority, true));
                 $smartID = ($this->addCandidate ? $idCandidate.':' : '') . $idValue . '!' . $authority;
             } else {

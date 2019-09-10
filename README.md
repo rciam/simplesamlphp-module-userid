@@ -50,6 +50,8 @@ The following configuration options are available:
     `true`. If this is set to `false`, SSP will attempt to use the value of the
     `eduPersonPrincipalName` attribute, leading to errors when the latter is
     not available.
+ * `skip_authority_list`: Optional, an array of IdP entityIDs that should be 
+    excluded from the authority part of the user id source.
  
 The generated identifiers have the following form:
 ```
@@ -76,8 +78,20 @@ authproc = array(
         'add_candidate' => false,
         'add_authority' => true,   
         'scope' => 'example.org',
+        'skip_authority_list' => array(
+            'https://www.example1.org',
+            'https://www.example2.org',
+        ),
     ),
 ```
+
+## Compatibility matrix
+
+This table matches the module version with the supported SimpleSAMLphp version.
+
+| Module |  SimpleSAMLphp |
+|:------:|:--------------:|
+| v1.0   | v1.14          |
 
 ## License
 
