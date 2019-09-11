@@ -6,6 +6,8 @@ identifier is generated using the first non-empty attribute from a given
 list of attributes. At least one non-empty attribute is required, otherwise
 authentication fails with an exception.
 
+## OpaqueSmartID
+
 This filter is based on the `smartattributes:SmartID` authentication
 processing filter included in the SimpleSAMLphp distribution. As such,
 it can be used to provide consistent user identifiers when there are 
@@ -19,7 +21,7 @@ following identifier properties:
    in an opaque 64-character long string that by itself provides no information about
    the identified user.
    
-## Configuration
+### Configuration
 The following configuration options are available:
  * `candidates`: An array of attributes names to consider as the user 
    identifier attribute. Defaults to:
@@ -88,6 +90,29 @@ authproc = array(
             'example1',
             'example2',
         ),
+    ),
+```
+
+## PersistentNameID2Attribute
+
+The `userid:PersistentNameID2Attribute` is a SimpleSAMLphp authentication processing filter for generating an attribute from the persistent NameID.
+
+### Configuration
+
+The following configuration options are available:
+
+* `attribute`: Optional, a string to define the attribute name to save the NameID in. Defaults to `eduPersonTargetedID`
+* `nameId`: Optional, a boolean to indicate whether or not to insert `NameID` attribute as a \SAML2\XML\saml\NameID object. Defaults to `true`.
+
+### Example configuration
+
+```php
+authproc = array(
+    ...
+    '61' => array(
+        'class' => 'userid:PersistentNameID2Attribute',
+        'attribute' => 'eduPersonTargetedID',
+        'nameId' => true,
     ),
 ```
 
