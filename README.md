@@ -116,6 +116,39 @@ authproc = array(
     ),
 ```
 
+## RequiredAttributes
+
+The `userid:RequiredAttributes` is a SimpleSAMLphp authentication processing filter for making attribute(s) mandatory.
+If the IdP doesn't release these attributes then the authentication chain will stop with an error message displayed in the UI.
+
+
+### Configuration
+
+The following configuration options are available:
+
+* `attributes`: Optional, an array of attributes names which define the required attributes. Default values: givenName, sn, mail
+* `custom_resolutions`: Optional, an array of entity IDs as keys and the custom error message as values . Defaults to empty array.
+
+### Example configuration
+
+```php
+  authproc = array(
+      ...
+      '62' => array(
+          'class' => 'userid:RequiredAttributes',
+          'attributes' => array(
+              'givenName',
+              'sn',
+              'mail',
+              'eduPersonScopedAffiliation',
+          ),
+          'custom_resolutions' => array(
+              'https://www.example1.org/' => 'Error message foo',
+              'https://www.example2.org/' => 'Error message foo bar',
+          ),
+      ),
+```
+
 ## Compatibility matrix
 
 This table matches the module version with the supported SimpleSAMLphp version.

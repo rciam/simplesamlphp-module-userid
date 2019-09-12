@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - OpaqueSmartID class
   - List of tags that should be excluded from the authority part of the user id source.
 - Add instructions for `PersistentNameID2Attribute` class
+- Add `RequiredAttributes` class
 
 ### Changed
 
