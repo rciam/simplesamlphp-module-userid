@@ -156,6 +156,7 @@ This table matches the module version with the supported SimpleSAMLphp version.
 | Module |  SimpleSAMLphp |
 |:------:|:--------------:|
 | v1.0   | v1.14          |
+| v2.0   | v1.15          |
 
 ## License
 
