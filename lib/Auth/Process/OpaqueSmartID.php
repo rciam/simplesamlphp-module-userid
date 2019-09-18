@@ -231,11 +231,13 @@ class sspmod_userid_Auth_Process_OpaqueSmartID extends SimpleSAML_Auth_Processin
             }
             return;
         }
+        $idpEmailAddress = $this->getIdPEmailAddress($idpMetadata);
         $baseUrl = SimpleSAML_Configuration::getInstance()->getString('baseurlpath'
 );
         $this->showError('NOATTRIBUTE', array(
             '%ATTRIBUTES%' => $this->candidates,
             '%IDP%' => $this->getIdPDisplayName($request),
+            '%IDPEMAILADDRESS%' => $idpEmailAddress,
             '%BASEDIR%' => $baseUrl,
             '%RESTARTURL%' => $request[SimpleSAML_Auth_State::RESTART]));
     }
@@ -248,7 +250,7 @@ class sspmod_userid_Auth_Process_OpaqueSmartID extends SimpleSAML_Auth_Processin
             try {
                 $idValue = $this->parseUserId($attributes[$idCandidate][0]);
             } catch(Exception $e) {
-                SimpleSAML\Logger::warning("Failed to generate user ID based on candidate "
+                SimpleSAML\Logger::error("Failed to generate user ID based on candidate "
                     . $idCandidate . " attribute: " . $e->getMessage());
                 continue;
             }
@@ -266,6 +268,7 @@ class sspmod_userid_Auth_Process_OpaqueSmartID extends SimpleSAML_Auth_Processin
             }
             $salt = SimpleSAML\Utils\Config::getSecretSalt();
             $hashedUID = hash("sha256", $smartID.'!'.$salt);
+            SimpleSAML\Logger::notice("[OpaqueSmartID] externalId=" . var_export($smartID, true) . ", internalId=" . var_export($hashedUID, true));
             if (isset($this->scope)) {
                 return $hashedUID.'@'.$this->scope;
             }
@@ -297,6 +300,34 @@ class sspmod_userid_Auth_Process_OpaqueSmartID extends SimpleSAML_Auth_Processin
                 . get_class($attribute));
         }
         return $idValue;
+    }
+
+    private function getIdPEmailAddress($idpMetadata)
+    {
+        $idpEmailAddress = null;
+        if (!empty($idpMetadata['contacts']) && is_array($idpMetadata['contacts'])) {
+            foreach ($idpMetadata['contacts'] as $contact) {
+                if (!empty($contact['contactType']) && !empty($contact['emailAddress'])) {
+                    if ($contact['contactType'] === 'technical') {
+                        $idpEmailAddress = $contact['emailAddress'];
+                        continue;
+                    } elseif ($contact['contactType'] === 'support') {
+                        $idpEmailAddress = $contact['emailAddress'];
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (!empty($idpEmailAddress)) {
+            foreach ($idpEmailAddress as &$idpEmailAddressEntry) {
+                if (substr($idpEmailAddressEntry, 0, 7) === "mailto:") {
+                    $idpEmailAddressEntry = substr($idpEmailAddressEntry, 7);
+                }
+            }
+            $idpEmailAddress = implode(";", $idpEmailAddress);
+        }
+        return $idpEmailAddress;
     }
 
     private function getIdPTags($idpMetadata)
