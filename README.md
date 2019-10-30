@@ -56,6 +56,8 @@ The following configuration options are available:
     excluded from the authority part of the user id source.
  * `idp_tag_whitelist`: Optional, an array of tags that the auth process 
     should be executed
+ * `idp_tag_blacklist`: Optional, an array of tags that the auth process 
+    should not be executed
  
 The generated identifiers have the following form:
 ```

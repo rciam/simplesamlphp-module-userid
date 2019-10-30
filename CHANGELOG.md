@@ -7,9 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+### Added
+
+- OpaqueSmartID class
+  - Add `idp_tag_blacklist` option
+
 ### Changed
 
-- Replace `skip_tag_list` with `idp_tag_whitelist` option
+- OpaqueSmartID class
+  - Replace `skip_tag_list` with `idp_tag_whitelist` option
 
 ## [v2.1.0] - 2019-09-18
 
