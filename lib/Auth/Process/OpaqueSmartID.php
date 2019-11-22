@@ -97,7 +97,8 @@ use SimpleSAML\Metadata\MetaDataStorageHandler;
 use SimpleSAML\XHTML\Template;
 use SimpleSAML\Utils\Config;
 
-class OpaqueSmartID extends \SimpleSAML\Auth\ProcessingFilter {
+class OpaqueSmartID extends \SimpleSAML\Auth\ProcessingFilter
+{
 
     /**
      * List of tags that the auth process should be executed
@@ -150,12 +151,13 @@ class OpaqueSmartID extends \SimpleSAML\Auth\ProcessingFilter {
 
     /**
      * Whether to assign the generated user identifier to the `UserID`
-         * state parameter
+     * state parameter
      */
     private $setUserIdAttribute = true;
 
 
-    public function __construct($config, $reserved) {
+    public function __construct($config, $reserved)
+    {
         parent::__construct($config, $reserved);
 
         assert('is_array($config)');
@@ -229,7 +231,8 @@ class OpaqueSmartID extends \SimpleSAML\Auth\ProcessingFilter {
      *
      * @param array &$request  The request to process
      */
-    public function process(&$request) {
+    public function process(&$request)
+    {
         assert('is_array($request)');
         assert('array_key_exists("Attributes", $request)');
 
@@ -264,24 +267,25 @@ class OpaqueSmartID extends \SimpleSAML\Auth\ProcessingFilter {
             return;
         }
         $idpEmailAddress = $this->getIdPEmailAddress($idpMetadata);
-        $baseUrl = Configuration::getInstance()->getString('baseurlpath'
-);
+        $baseUrl = Configuration::getInstance()->getString('baseurlpath');
         $this->showError('NOATTRIBUTE', array(
             '%ATTRIBUTES%' => $this->candidates,
             '%IDP%' => $this->getIdPDisplayName($request),
             '%IDPEMAILADDRESS%' => $idpEmailAddress,
             '%BASEDIR%' => $baseUrl,
-            '%RESTARTURL%' => $request[State::RESTART]));
+            '%RESTARTURL%' => $request[State::RESTART]
+        ));
     }
 
-    private function generateUserId($attributes, $request) {
+    private function generateUserId($attributes, $request)
+    {
         foreach ($this->candidates as $idCandidate) {
             if (empty($attributes[$idCandidate][0])) {
                 continue;
             }
             try {
                 $idValue = $this->parseUserId($attributes[$idCandidate][0]);
-            } catch(\Exception $e) {
+            } catch (\Exception $e) {
                 Logger::error("Failed to generate user ID based on candidate "
                     . $idCandidate . " attribute: " . $e->getMessage());
                 continue;
@@ -294,15 +298,15 @@ class OpaqueSmartID extends \SimpleSAML\Auth\ProcessingFilter {
             }
             if (!empty($authority) && !in_array($authority, $this->skipAuthorityList, true)) {
                 Logger::debug("[OpaqueSmartID] authority=" . var_export($authority, true));
-                $smartID = ($this->addCandidate ? $idCandidate.':' : '') . $idValue . '!' . $authority;
+                $smartID = ($this->addCandidate ? $idCandidate . ':' : '') . $idValue . '!' . $authority;
             } else {
-                $smartID = ($this->addCandidate ? $idCandidate.':' : '') . $idValue;
+                $smartID = ($this->addCandidate ? $idCandidate . ':' : '') . $idValue;
             }
             $salt = Config::getSecretSalt();
-            $hashedUID = hash("sha256", $smartID.'!'.$salt);
+            $hashedUID = hash("sha256", $smartID . '!' . $salt);
             Logger::notice("[OpaqueSmartID] externalId=" . var_export($smartID, true) . ", internalId=" . var_export($hashedUID, true));
             if (isset($this->scope)) {
-                return $hashedUID.'@'.$this->scope;
+                return $hashedUID . '@' . $this->scope;
             }
             return $hashedUID;
         }
@@ -327,7 +331,7 @@ class OpaqueSmartID extends \SimpleSAML\Auth\ProcessingFilter {
             } else {
                 throw new \Exception('Unsupported NameID format');
             }
-        } else     {
+        } else {
             throw new \Exception('Unsupported attribute value type: '
                 . get_class($attribute));
         }
@@ -371,7 +375,7 @@ class OpaqueSmartID extends \SimpleSAML\Auth\ProcessingFilter {
         return array();
     }
 
-    private function getIdPDisplayName($request) 
+    private function getIdPDisplayName($request)
     {
         assert('array_key_exists("entityid", $request["Source"])');
 
@@ -430,5 +434,4 @@ class OpaqueSmartID extends \SimpleSAML\Auth\ProcessingFilter {
         $t->show();
         exit();
     }
-
 }

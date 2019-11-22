@@ -53,7 +53,8 @@ class RequiredAttributes extends \SimpleSAML\Auth\ProcessingFilter
      */
     private $customResolutions = [];
 
-    public function __construct($config, $reserved) {
+    public function __construct($config, $reserved)
+    {
         parent::__construct($config, $reserved);
 
         assert('is_array($config)');
@@ -78,14 +79,15 @@ class RequiredAttributes extends \SimpleSAML\Auth\ProcessingFilter
      *
      * @param array &$request  The request to process
      */
-    public function process(&$request) {
+    public function process(&$request)
+    {
         assert('is_array($request)');
         assert('array_key_exists("Attributes", $request)');
 
         $missingAttributes = [];
         foreach ($this->attributes as $attribute) {
             if (empty($request['Attributes'][$attribute])) {
-                 $missingAttributes[] = $attribute;
+                $missingAttributes[] = $attribute;
             }
         }
         Logger::debug("[RequiredAttributes] missingAttributes=" . var_export($missingAttributes, true));
@@ -202,5 +204,4 @@ class RequiredAttributes extends \SimpleSAML\Auth\ProcessingFilter
         $t->show();
         exit();
     }
-
 }
