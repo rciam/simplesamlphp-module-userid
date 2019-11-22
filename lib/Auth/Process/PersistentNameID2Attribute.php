@@ -7,13 +7,13 @@ namespace SimpleSAML\Module\userid\Auth\Process;
  * 
  * Example configuration:
  *
- *    authproc = array(
+ *    authproc = [
  *       ...
- *       '61' => array(
+ *       '61' => [
  *           'class' => 'userid:PersistentNameID2Attribute',
  *           'attribute' => 'eduPersonTargetedID',
  *           'nameId' => true,
- *       ),
+ *       ],
  * 
  * @package SimpleSAMLphp
  */
@@ -88,6 +88,6 @@ class PersistentNameID2Attribute extends \SimpleSAML\Auth\ProcessingFilter
         // @var \SAML2\XML\saml\NameID $nameID
         $nameID = $state['saml:sp:NameID'];
 
-        $state['Attributes'][$this->attribute] = array((!$this->nameId) ? $nameID->value : $nameID);
+        $state['Attributes'][$this->attribute] = [(!$this->nameId) ? $nameID->value : $nameID];
     }
 }

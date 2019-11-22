@@ -78,28 +78,28 @@ SHA-256(AttributeName:AttributeValue!AuthenticatingAuthority!SecretSalt)@scope
 ### Example configuration
 
 ```php
-authproc = array(
+authproc = [
     ...
-    '60' => array(
+    '60' => [
         'class' => 'uid:OpaqueSmartID',
-        'candidates' => array(
+        'candidates' => [
             'eduPersonUniqueId',
             'eduPersonPrincipalName',
             'eduPersonTargetedID',
-        ),
+        ],
         'id_attribute' => 'eduPersonUniqueId',
         'add_candidate' => false,
         'add_authority' => true,
         'scope' => 'example.org',
-        'skip_authority_list' => array(
+        'skip_authority_list' => [
             'https://www.example1.org',
             'https://www.example2.org',
-        ),
-        'idp_tag_whitelist' => array(
+        ],
+        'idp_tag_whitelist' => [
             'example1',
             'example2',
-        ),
-    ),
+        ],
+    ],
 ```
 
 ## PersistentNameID2Attribute
@@ -116,13 +116,13 @@ The following configuration options are available:
 ### Example configuration
 
 ```php
-authproc = array(
+authproc = [
     ...
-    '61' => array(
+    '61' => [
         'class' => 'userid:PersistentNameID2Attribute',
         'attribute' => 'eduPersonTargetedID',
         'nameId' => true,
-    ),
+    ],
 ```
 
 ## RequiredAttributes
@@ -140,21 +140,21 @@ The following configuration options are available:
 ### Example configuration
 
 ```php
-  authproc = array(
+  authproc = [
       ...
-      '62' => array(
+      '62' => [
           'class' => 'userid:RequiredAttributes',
-          'attributes' => array(
+          'attributes' => [
               'givenName',
               'sn',
               'mail',
               'eduPersonScopedAffiliation',
-          ),
-          'custom_resolutions' => array(
+          ],
+          'custom_resolutions' => [
               'https://www.example1.org/' => 'Error message foo',
               'https://www.example2.org/' => 'Error message foo bar',
-          ),
-      ),
+          ],
+      ],
 ```
 
 ## Compatibility matrix

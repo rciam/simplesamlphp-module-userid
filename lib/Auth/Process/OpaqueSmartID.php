@@ -64,28 +64,28 @@ namespace SimpleSAML\Module\userid\Auth\Process;
  *
  * Example configuration:
  *
- *    authproc = array(
+ *    authproc = [
  *       ...
- *       '60' => array(
+ *       '60' => [
  *           'class' => 'uid:OpaqueSmartID',
- *           'candidates' => array(
+ *           'candidates' => [
  *               'eduPersonUniqueId',
  *               'eduPersonPrincipalName',
  *               'eduPersonTargetedID',
- *           ),
+ *           ],
  *           'id_attribute' => 'eduPersonUniqueId',
  *           'add_candidate' => false,
  *           'add_authority' => true,
  *           'scope' => 'example.org',
- *           'skip_authority_list' => array(
+ *           'skip_authority_list' => [
  *               'https://www.example1.org',
  *               'https://www.example2.org',
- *           ),
- *           'idp_tag_whitelist' => array(
+ *           ],
+ *           'idp_tag_whitelist' => [
  *               'example1',
  *               'example2',
- *           ),
- *       ),
+ *           ],
+ *       ],
  *
  * @author Nicolas Liampotis <nliam@grnet.gr>
  */
@@ -103,21 +103,21 @@ class OpaqueSmartID extends \SimpleSAML\Auth\ProcessingFilter
     /**
      * List of tags that the auth process should be executed
      */
-    private $idpTagWhitelist = array();
+    private $idpTagWhitelist = [];
 
     /**
      * List of tags that the auth process should not be executed
      */
-    private $idpTagBlacklist = array();
+    private $idpTagBlacklist = [];
 
     // List of IdP entityIDs that should be excluded from the authority
     // part of the user id source.
-    private $skipAuthorityList = array();
+    private $skipAuthorityList = [];
 
     /**
      * The list of candidate attribute(s) to be used for the new ID attribute.
      */
-    private $candidates = array(
+    private $candidates = [
         'eduPersonUniqueId',
         'eduPersonPrincipalName',
         'eduPersonTargetedID',
@@ -126,7 +126,7 @@ class OpaqueSmartID extends \SimpleSAML\Auth\ProcessingFilter
         'facebook_targetedID',
         'windowslive_targetedID',
         'twitter_targetedID',
-    );
+    ];
 
     /**
      * The name of the generated ID attribute.
@@ -259,7 +259,7 @@ class OpaqueSmartID extends \SimpleSAML\Auth\ProcessingFilter
         $userId = $this->generateUserId($request['Attributes'], $request);
 
         if (isset($userId)) {
-            $request['Attributes'][$this->idAttribute] = array($userId);
+            $request['Attributes'][$this->idAttribute] = [$userId];
             // TODO: Remove this in SSP 2.0
             if ($this->setUserIdAttribute) {
                 $request['UserID'] = $userId;
@@ -268,13 +268,13 @@ class OpaqueSmartID extends \SimpleSAML\Auth\ProcessingFilter
         }
         $idpEmailAddress = $this->getIdPEmailAddress($idpMetadata);
         $baseUrl = Configuration::getInstance()->getString('baseurlpath');
-        $this->showError('NOATTRIBUTE', array(
+        $this->showError('NOATTRIBUTE', [
             '%ATTRIBUTES%' => $this->candidates,
             '%IDP%' => $this->getIdPDisplayName($request),
             '%IDPEMAILADDRESS%' => $idpEmailAddress,
             '%BASEDIR%' => $baseUrl,
             '%RESTARTURL%' => $request[State::RESTART]
-        ));
+        ]);
     }
 
     private function generateUserId($attributes, $request)
@@ -372,7 +372,7 @@ class OpaqueSmartID extends \SimpleSAML\Auth\ProcessingFilter
             return $idpMetadata['tags'];
         }
 
-        return array();
+        return [];
     }
 
     private function getIdPDisplayName($request)

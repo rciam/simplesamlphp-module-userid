@@ -10,21 +10,21 @@ namespace SimpleSAML\Module\userid\Auth\Process;
  *
  * Example configuration:
  *
- *    authproc = array(
+ *    authproc = [
  *       ...
- *       '60' => array(
+ *       '60' => [
  *           'class' => 'userid:RequiredAttributes',
- *           'attributes' => array(
+ *           'attributes' => [
  *               'givenName',
  *               'sn',
  *               'mail',
  *               'eduPersonScopedAffiliation',
- *           ),
- *           'custom_resolutions' => array(
+ *           ],
+ *           'custom_resolutions' => [
  *               'https://www.example1.org/' => 'Error message foo',
  *               'https://www.example2.org/' => 'Error message foo bar',
- *           ),
- *       ),
+ *           ],
+ *       ],
  *
  * @author Nicolas Liampotis <nliam@grnet.gr>
  */
@@ -41,11 +41,11 @@ class RequiredAttributes extends \SimpleSAML\Auth\ProcessingFilter
     /**
      * The list of required attribute(s).
      */
-    private $attributes = array(
+    private $attributes = [
         'givenName',
         'sn',
         'mail',
-    );
+    ];
 
     /**
      * A mapping for entityIDs and custom error message.
@@ -103,13 +103,13 @@ class RequiredAttributes extends \SimpleSAML\Auth\ProcessingFilter
         }
         $idpEmailAddress = $this->getIdPEmailAddress($idpMetadata);
         $baseUrl = Configuration::getInstance()->getString('baseurlpath');
-        $errorParams = array(
+        $errorParams = [
             '%ATTRIBUTES%' => $missingAttributes,
             '%IDPNAME%' => $idpName,
             '%IDPEMAILADDRESS%' => $idpEmailAddress,
             '%BASEDIR%' => $baseUrl,
             '%RESTARTURL%' => $request[State::RESTART]
-        );
+        ];
         if (!empty($this->customResolutions["$idpEntityId"])) {
             $errorParams['%CUSTOMRESOLUTION%'] = $this->customResolutions["$idpEntityId"];
         }
