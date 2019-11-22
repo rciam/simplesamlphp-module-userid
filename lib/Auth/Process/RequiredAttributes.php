@@ -29,6 +29,12 @@ namespace SimpleSAML\Module\userid\Auth\Process;
  * @author Nicolas Liampotis <nliam@grnet.gr>
  */
 
+use SimpleSAML\Auth\State;
+use SimpleSAML\Configuration;
+use SimpleSAML\Logger;
+use SimpleSAML\Metadata\MetaDataStorageHandler;
+use SimpleSAML\XHTML\Template;
+
 class RequiredAttributes extends \SimpleSAML\Auth\ProcessingFilter
 {
 
@@ -82,7 +88,7 @@ class RequiredAttributes extends \SimpleSAML\Auth\ProcessingFilter
                  $missingAttributes[] = $attribute;
             }
         }
-        SimpleSAML\Logger::debug("[RequiredAttributes] missingAttributes=" . var_export($missingAttributes, true));
+        Logger::debug("[RequiredAttributes] missingAttributes=" . var_export($missingAttributes, true));
         if (empty($missingAttributes)) {
             return;
         }
@@ -94,13 +100,13 @@ class RequiredAttributes extends \SimpleSAML\Auth\ProcessingFilter
             $idpName = $idpEntityId;
         }
         $idpEmailAddress = $this->getIdPEmailAddress($idpMetadata);
-        $baseUrl = SimpleSAML_Configuration::getInstance()->getString('baseurlpath');
+        $baseUrl = Configuration::getInstance()->getString('baseurlpath');
         $errorParams = array(
             '%ATTRIBUTES%' => $missingAttributes,
             '%IDPNAME%' => $idpName,
             '%IDPEMAILADDRESS%' => $idpEmailAddress,
             '%BASEDIR%' => $baseUrl,
-            '%RESTARTURL%' => $request[SimpleSAML_Auth_State::RESTART]
+            '%RESTARTURL%' => $request[State::RESTART]
         );
         if (!empty($this->customResolutions["$idpEntityId"])) {
             $errorParams['%CUSTOMRESOLUTION%'] = $this->customResolutions["$idpEntityId"];
@@ -181,7 +187,7 @@ class RequiredAttributes extends \SimpleSAML\Auth\ProcessingFilter
         // $request['saml:sp:IdP'] will contain an entry id for the remote IdP.
         if (!empty($request['saml:sp:IdP'])) {
             $idpEntityId = $request['saml:sp:IdP'];
-            return SimpleSAML_Metadata_MetaDataStorageHandler::getMetadataHandler()->getMetaData($idpEntityId, 'saml20-idp-remote');
+            return MetaDataStorageHandler::getMetadataHandler()->getMetaData($idpEntityId, 'saml20-idp-remote');
         } else {
             return $request['Source'];
         }
@@ -189,8 +195,8 @@ class RequiredAttributes extends \SimpleSAML\Auth\ProcessingFilter
 
     private function showError($errorCode, $errorParams)
     {
-        $globalConfig = SimpleSAML_Configuration::getInstance();
-        $t = new SimpleSAML_XHTML_Template($globalConfig, 'userid:error.tpl.php');
+        $globalConfig = Configuration::getInstance();
+        $t = new Template($globalConfig, 'userid:error.tpl.php');
         $t->data['errorCode'] = $errorCode;
         $t->data['parameters'] = $errorParams;
         $t->show();
