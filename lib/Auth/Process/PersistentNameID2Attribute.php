@@ -1,5 +1,6 @@
 <?php
 
+namespace SimpleSAML\Module\userid\Auth\Process;
 
 /**
  * Authentication processing filter for generating an attribute from the persistent NameID.
@@ -16,7 +17,8 @@
  * 
  * @package SimpleSAMLphp
  */
-class sspmod_userid_Auth_Process_PersistentNameID2Attribute extends SimpleSAML_Auth_ProcessingFilter
+
+class PersistentNameID2Attribute extends \SimpleSAML\Auth\ProcessingFilter
 {
 
     /**

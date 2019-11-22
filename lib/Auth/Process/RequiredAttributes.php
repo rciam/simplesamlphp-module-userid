@@ -1,5 +1,7 @@
 <?php
 
+namespace SimpleSAML\Module\userid\Auth\Process;
+
 /**
  * This is a SimpleSAMLphp authentication processing filter for
  * making attribute(s) mandatory.
@@ -27,7 +29,7 @@
  * @author Nicolas Liampotis <nliam@grnet.gr>
  */
 
-class sspmod_userid_Auth_Process_RequiredAttributes extends SimpleSAML_Auth_ProcessingFilter
+class RequiredAttributes extends \SimpleSAML\Auth\ProcessingFilter
 {
 
     /**
