@@ -54,8 +54,10 @@ The following configuration options are available:
     not available.
  * `skip_authority_list`: Optional, an array of IdP entityIDs that should be 
     excluded from the authority part of the user id source.
- * `skip_tag_list`: Optional, an array of tags that should be 
-    excluded from the authority part of the user id source.
+ * `idp_tag_whitelist`: Optional, an array of tags that the auth process 
+    should be executed
+ * `idp_tag_blacklist`: Optional, an array of tags that the auth process 
+    should not be executed
  
 The generated identifiers have the following form:
 ```
@@ -86,7 +88,7 @@ authproc = array(
             'https://www.example1.org',
             'https://www.example2.org',
         ),
-        'skip_tag_list' => array(
+        'idp_tag_whitelist' => array(
             'example1',
             'example2',
         ),
@@ -158,6 +160,7 @@ This table matches the module version with the supported SimpleSAMLphp version.
 | v1.0   | v1.14          |
 | v2.0   | v1.15          |
 | v2.1   | v1.15          |
+| v2.2   | v1.15          |
 
 ## License
 
