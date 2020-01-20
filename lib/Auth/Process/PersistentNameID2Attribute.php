@@ -1,22 +1,26 @@
 <?php
 
+namespace SimpleSAML\Module\userid\Auth\Process;
 
 /**
  * Authentication processing filter for generating an attribute from the persistent NameID.
  * 
  * Example configuration:
  *
- *    authproc = array(
+ *    authproc = [
  *       ...
- *       '61' => array(
+ *       '61' => [
  *           'class' => 'userid:PersistentNameID2Attribute',
  *           'attribute' => 'eduPersonTargetedID',
  *           'nameId' => true,
- *       ),
+ *       ],
  * 
  * @package SimpleSAMLphp
  */
-class sspmod_userid_Auth_Process_PersistentNameID2Attribute extends SimpleSAML_Auth_ProcessingFilter
+
+use SimpleSAML\Logger;
+
+class PersistentNameID2Attribute extends \SimpleSAML\Auth\ProcessingFilter
 {
 
     /**
@@ -74,9 +78,9 @@ class sspmod_userid_Auth_Process_PersistentNameID2Attribute extends SimpleSAML_A
         }
 
         if (!isset($state['saml:sp:NameID']) || $state['saml:sp:NameID']->Format !== \SAML2\Constants::NAMEID_PERSISTENT) {
-            SimpleSAML\Logger::warning(
-                'Unable to generate ' . $this->attribute 
-                . ' attribute because no persistent NameID was available.'
+            Logger::warning(
+                'Unable to generate ' . $this->attribute
+                    . ' attribute because no persistent NameID was available.'
             );
             return;
         }
@@ -84,6 +88,6 @@ class sspmod_userid_Auth_Process_PersistentNameID2Attribute extends SimpleSAML_A
         // @var \SAML2\XML\saml\NameID $nameID
         $nameID = $state['saml:sp:NameID'];
 
-        $state['Attributes'][$this->attribute] = array((!$this->nameId) ? $nameID->value : $nameID);
+        $state['Attributes'][$this->attribute] = [(!$this->nameId) ? $nameID->value : $nameID];
     }
 }

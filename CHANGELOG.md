@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v3.0.0] - 2019-01-20
+
+This version is compatible with [SimpleSAMLphp v1.17](https://simplesamlphp.org/docs/1.17/simplesamlphp-changelog)
+
+### Changed
+
+- Switch classes to use namespaces
+- Add use declarations to classes
+- Change coding style based on PSR-2
+  - Opening braces for classes and functions go on the next line
+  - Remove left over whitespaces
+- Apply modern array syntax to all files
+
 ## [v2.2.0] - 2019-11-25
 
 ### Added
@@ -25,6 +38,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Include email address of the IdP technical/support contact in the error message
 
 ## [v2.0.0] - 2019-09-13
+
+This version is compatible with [SimpleSAMLphp v1.15](https://simplesamlphp.org/docs/1.15/simplesamlphp-changelog)
 
 ### Added
 

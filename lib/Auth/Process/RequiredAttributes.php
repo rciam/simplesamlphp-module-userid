@@ -1,5 +1,7 @@
 <?php
 
+namespace SimpleSAML\Module\userid\Auth\Process;
+
 /**
  * This is a SimpleSAMLphp authentication processing filter for
  * making attribute(s) mandatory.
@@ -8,36 +10,42 @@
  *
  * Example configuration:
  *
- *    authproc = array(
+ *    authproc = [
  *       ...
- *       '60' => array(
+ *       '60' => [
  *           'class' => 'userid:RequiredAttributes',
- *           'attributes' => array(
+ *           'attributes' => [
  *               'givenName',
  *               'sn',
  *               'mail',
  *               'eduPersonScopedAffiliation',
- *           ),
- *           'custom_resolutions' => array(
+ *           ],
+ *           'custom_resolutions' => [
  *               'https://www.example1.org/' => 'Error message foo',
  *               'https://www.example2.org/' => 'Error message foo bar',
- *           ),
- *       ),
+ *           ],
+ *       ],
  *
  * @author Nicolas Liampotis <nliam@grnet.gr>
  */
 
-class sspmod_userid_Auth_Process_RequiredAttributes extends SimpleSAML_Auth_ProcessingFilter
+use SimpleSAML\Auth\State;
+use SimpleSAML\Configuration;
+use SimpleSAML\Logger;
+use SimpleSAML\Metadata\MetaDataStorageHandler;
+use SimpleSAML\XHTML\Template;
+
+class RequiredAttributes extends \SimpleSAML\Auth\ProcessingFilter
 {
 
     /**
      * The list of required attribute(s).
      */
-    private $attributes = array(
+    private $attributes = [
         'givenName',
         'sn',
         'mail',
-    );
+    ];
 
     /**
      * A mapping for entityIDs and custom error message.
@@ -45,7 +53,8 @@ class sspmod_userid_Auth_Process_RequiredAttributes extends SimpleSAML_Auth_Proc
      */
     private $customResolutions = [];
 
-    public function __construct($config, $reserved) {
+    public function __construct($config, $reserved)
+    {
         parent::__construct($config, $reserved);
 
         assert('is_array($config)');
@@ -70,17 +79,18 @@ class sspmod_userid_Auth_Process_RequiredAttributes extends SimpleSAML_Auth_Proc
      *
      * @param array &$request  The request to process
      */
-    public function process(&$request) {
+    public function process(&$request)
+    {
         assert('is_array($request)');
         assert('array_key_exists("Attributes", $request)');
 
         $missingAttributes = [];
         foreach ($this->attributes as $attribute) {
             if (empty($request['Attributes'][$attribute])) {
-                 $missingAttributes[] = $attribute;
+                $missingAttributes[] = $attribute;
             }
         }
-        SimpleSAML\Logger::debug("[RequiredAttributes] missingAttributes=" . var_export($missingAttributes, true));
+        Logger::debug("[RequiredAttributes] missingAttributes=" . var_export($missingAttributes, true));
         if (empty($missingAttributes)) {
             return;
         }
@@ -92,14 +102,14 @@ class sspmod_userid_Auth_Process_RequiredAttributes extends SimpleSAML_Auth_Proc
             $idpName = $idpEntityId;
         }
         $idpEmailAddress = $this->getIdPEmailAddress($idpMetadata);
-        $baseUrl = SimpleSAML_Configuration::getInstance()->getString('baseurlpath');
-        $errorParams = array(
+        $baseUrl = Configuration::getInstance()->getString('baseurlpath');
+        $errorParams = [
             '%ATTRIBUTES%' => $missingAttributes,
             '%IDPNAME%' => $idpName,
             '%IDPEMAILADDRESS%' => $idpEmailAddress,
             '%BASEDIR%' => $baseUrl,
-            '%RESTARTURL%' => $request[SimpleSAML_Auth_State::RESTART]
-        );
+            '%RESTARTURL%' => $request[State::RESTART]
+        ];
         if (!empty($this->customResolutions["$idpEntityId"])) {
             $errorParams['%CUSTOMRESOLUTION%'] = $this->customResolutions["$idpEntityId"];
         }
@@ -179,7 +189,7 @@ class sspmod_userid_Auth_Process_RequiredAttributes extends SimpleSAML_Auth_Proc
         // $request['saml:sp:IdP'] will contain an entry id for the remote IdP.
         if (!empty($request['saml:sp:IdP'])) {
             $idpEntityId = $request['saml:sp:IdP'];
-            return SimpleSAML_Metadata_MetaDataStorageHandler::getMetadataHandler()->getMetaData($idpEntityId, 'saml20-idp-remote');
+            return MetaDataStorageHandler::getMetadataHandler()->getMetaData($idpEntityId, 'saml20-idp-remote');
         } else {
             return $request['Source'];
         }
@@ -187,12 +197,11 @@ class sspmod_userid_Auth_Process_RequiredAttributes extends SimpleSAML_Auth_Proc
 
     private function showError($errorCode, $errorParams)
     {
-        $globalConfig = SimpleSAML_Configuration::getInstance();
-        $t = new SimpleSAML_XHTML_Template($globalConfig, 'userid:error.tpl.php');
+        $globalConfig = Configuration::getInstance();
+        $t = new Template($globalConfig, 'userid:error.tpl.php');
         $t->data['errorCode'] = $errorCode;
         $t->data['parameters'] = $errorParams;
         $t->show();
         exit();
     }
-
 }
