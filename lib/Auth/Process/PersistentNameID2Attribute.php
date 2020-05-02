@@ -4,6 +4,16 @@
 /**
  * Authentication processing filter for generating an attribute from the persistent NameID.
  *
+ * Example configuration:
+ *
+ *    authproc = array(
+ *       ...
+ *       '61' => array(
+ *           'class' => 'userid:PersistentNameID2Attribute',
+ *           'attribute' => 'eduPersonTargetedID',
+ *           'nameId' => true,
+ *       ),
+ * 
  * @package SimpleSAMLphp
  */
 class sspmod_userid_Auth_Process_PersistentNameID2Attribute extends SimpleSAML_Auth_ProcessingFilter
