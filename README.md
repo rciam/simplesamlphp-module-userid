@@ -54,6 +54,10 @@ The following configuration options are available:
     not available.
  * `skip_authority_list`: Optional, an array of IdP entityIDs that should be 
     excluded from the authority part of the user id source.
+ * `idp_tag_whitelist`: Optional, an array of IdP tags for which the filter 
+    should be executed. When this option is specified, the filter will be
+    executued only if the authenticating IdP tags match any of the configured
+    tag values. 
  
 The generated identifiers have the following form:
 ```
@@ -83,6 +87,10 @@ authproc = array(
         'skip_authority_list' => array(
             'https://www.example1.org',
             'https://www.example2.org',
+        ),
+        'idp_tag_whitelist' => array(
+            'tag1',
+            'tag2',
         ),
     ),
 ```

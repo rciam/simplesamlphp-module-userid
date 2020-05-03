@@ -79,11 +79,21 @@
  *               'https://www.example1.org',
  *               'https://www.example2.org',
  *           ),
+ *           'idp_tag_whitelist' => array(
+ *               'tag1',
+ *               'tag2',
+ *           ),
  *       ),
  *
  * @author Nicolas Liampotis <nliam@grnet.gr>
  */
 class sspmod_userid_Auth_Process_OpaqueSmartID extends SimpleSAML_Auth_ProcessingFilter {
+
+    /**
+     * If this option is specified, the filter will be executed only if the
+     * authenticating IdP tags match any of the configured tag values.
+     */
+    private $idpTagWhitelist = array();
 
     // List of IdP entityIDs that should be excluded from the authority
     // part of the user id source.
@@ -135,6 +145,13 @@ class sspmod_userid_Auth_Process_OpaqueSmartID extends SimpleSAML_Auth_Processin
         parent::__construct($config, $reserved);
 
         assert('is_array($config)');
+
+        if (array_key_exists('idp_tag_whitelist', $config)) {
+            $this->idpTagWhitelist = $config['idp_tag_whitelist'];
+            if (!is_array($this->idpTagWhitelist)) {
+                throw new Exception('OpaqueSmartID authproc configuration error: \'idp_tag_whitelist\' should be an array.');
+            }
+        }
 
         if (array_key_exists('skip_authority_list', $config)) {
             $this->skipAuthorityList = $config['skip_authority_list'];
@@ -196,6 +213,14 @@ class sspmod_userid_Auth_Process_OpaqueSmartID extends SimpleSAML_Auth_Processin
         assert('array_key_exists("Attributes", $request)');
 
         $idpMetadata = $this->getIdPMetadata($request);
+        $idpTags = $this->getIdPTags($idpMetadata);
+        if (empty(array_intersect($this->idpTagWhitelist, $idpTags))) {
+            if ($this->setUserIdAttribute && !empty($request['Attributes'][$this->idAttribute])) {
+                $request['UserID'] = $request['Attributes'][$this->idAttribute][0];
+            }
+            SimpleSAML\Logger::debug("[OpaqueSmartID] Skipping IdP with tags " . var_export($idpTags, true));
+            return;
+        }
         $userId = $this->generateUserId($request['Attributes'], $request);
 
         if (isset($userId)) {
@@ -303,6 +328,15 @@ class sspmod_userid_Auth_Process_OpaqueSmartID extends SimpleSAML_Auth_Processin
             $idpEmailAddress = implode(";", $idpEmailAddress);
         }
         return $idpEmailAddress;
+    }
+
+    private function getIdPTags($idpMetadata)
+    {
+        if (!empty($idpMetadata['tags'])) {
+            return $idpMetadata['tags'];
+        }
+
+        return array();
     }
 
     private function getIdPDisplayName($request) 
