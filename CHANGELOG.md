@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Improve `OpaqueSmartID` logging
+- Improve `OpaqueSmartID` error messages
 
 ## [v1.0.0] - 2019-09-10
 

@@ -258,9 +258,9 @@ class sspmod_userid_Auth_Process_OpaqueSmartID extends SimpleSAML_Auth_Processin
         $idpEmailAddress = $this->getIdPEmailAddress($idpMetadata);
         $baseUrl = SimpleSAML_Configuration::getInstance()->getString('baseurlpath'
 );
-        $this->showError('NOATTRIBUTE', array(
+        $this->showError('NOIDENTIFIER', array(
             '%ATTRIBUTES%' => $this->candidates,
-            '%IDP%' => $this->getIdPDisplayName($request),
+            '%IDPNAME%' => $this->getIdPDisplayName($request),
             '%IDPEMAILADDRESS%' => $idpEmailAddress,
             '%BASEDIR%' => $baseUrl,
             '%RESTARTURL%' => $request[SimpleSAML_Auth_State::RESTART]));
