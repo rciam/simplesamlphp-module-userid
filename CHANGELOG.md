@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add `RequiredAttributes` filter
 - Include email address of the IdP in `OpaqueSmartID` error message
 - Add `idp_tag_whitelist` option for `OpaqueSmartID` filter
+- Add `idp_tag_blacklist` option for `OpaqueSmartID` filter
 
 ### Changed
 

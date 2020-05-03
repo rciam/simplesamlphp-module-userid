@@ -57,6 +57,10 @@ The following configuration options are available:
  * `idp_tag_whitelist`: Optional, an array of IdP tags for which the filter 
     should be executed. When this option is specified, the filter will be
     executued only if the authenticating IdP tags match any of the configured
+    tag values.
+ * `idp_tag_blacklist`: Optional, an array of IdP tags for which the filter 
+    should not be executed. When this option is specified, the filter will not 
+    be executued if the authenticating IdP tags match any of the configured
     tag values. 
  
 The generated identifiers have the following form:

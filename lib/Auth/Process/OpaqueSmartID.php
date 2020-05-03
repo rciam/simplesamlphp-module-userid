@@ -91,9 +91,15 @@ class sspmod_userid_Auth_Process_OpaqueSmartID extends SimpleSAML_Auth_Processin
 
     /**
      * If this option is specified, the filter will be executed only if the
-     * authenticating IdP tags match any of the configured tag values.
+     * authenticating IdP tags match any of the tags in the whitelist.
      */
     private $idpTagWhitelist = array();
+
+    /**
+     * If this option is specified, the filter will not be executed if the
+     * authenticating IdP tags match any of the tags in the blacklist.
+     */
+    private $idpTagBlacklist = array();
 
     // List of IdP entityIDs that should be excluded from the authority
     // part of the user id source.
@@ -136,7 +142,7 @@ class sspmod_userid_Auth_Process_OpaqueSmartID extends SimpleSAML_Auth_Processin
 
     /**
      * Whether to assign the generated user identifier to the `UserID` 
-         * state parameter
+     * state parameter
      */
     private $setUserIdAttribute = true;
 
@@ -150,6 +156,13 @@ class sspmod_userid_Auth_Process_OpaqueSmartID extends SimpleSAML_Auth_Processin
             $this->idpTagWhitelist = $config['idp_tag_whitelist'];
             if (!is_array($this->idpTagWhitelist)) {
                 throw new Exception('OpaqueSmartID authproc configuration error: \'idp_tag_whitelist\' should be an array.');
+            }
+        }
+
+        if (array_key_exists('idp_tag_blacklist', $config)) {
+            $this->idpTagBlacklist = $config['idp_tag_blacklist'];
+            if (!is_array($this->idpTagBlacklist)) {
+                throw new Exception('OpaqueSmartID authproc configuration error: \'idp_tag_blacklist\' should be an array.');
             }
         }
 
@@ -218,9 +231,20 @@ class sspmod_userid_Auth_Process_OpaqueSmartID extends SimpleSAML_Auth_Processin
             if ($this->setUserIdAttribute && !empty($request['Attributes'][$this->idAttribute])) {
                 $request['UserID'] = $request['Attributes'][$this->idAttribute][0];
             }
-            SimpleSAML\Logger::debug("[OpaqueSmartID] Skipping IdP with tags " . var_export($idpTags, true));
+            SimpleSAML_Logger::debug("[OpaqueSmartID] Skipping IdP with tags " . var_export($idpTags, true));
             return;
+        } else {
+            if (!empty($this->idpTagWhitelist)) {
+                if (empty(array_intersect($this->idpTagWhitelist, $idpTags))) {
+                    if ($this->setUserIdAttribute && !empty($request['Attributes'][$this->idAttribute])) {
+                        $request['UserID'] = $request['Attributes'][$this->idAttribute][0];
+                    }
+                    SimpleSAML_Logger::debug("[OpaqueSmartID] Skipping IdP with tags " . var_export($idpTags, true));
+                    return;
+                }
+            }
         }
+
         $userId = $this->generateUserId($request['Attributes'], $request);
 
         if (isset($userId)) {
