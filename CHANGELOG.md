@@ -9,9 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Add instructions for `PersistentNameID2Attribute` class
-- Add `RequiredAttributes` class
-- Include email address of the IdP in OpaqueSmartID error message
+- Add instructions for `PersistentNameID2Attribute` filter
+- Add `RequiredAttributes` filter
+- Include email address of the IdP in `OpaqueSmartID` error message
+
+### Changed
+
+- Improve `OpaqueSmartID` logging
 
 ## [v1.0.0] - 2019-09-10
 

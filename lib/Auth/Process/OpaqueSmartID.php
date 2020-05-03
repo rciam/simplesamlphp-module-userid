@@ -225,7 +225,7 @@ class sspmod_userid_Auth_Process_OpaqueSmartID extends SimpleSAML_Auth_Processin
             try {
                 $idValue = $this->parseUserId($attributes[$idCandidate][0]);
             } catch(Exception $e) {
-                SimpleSAML_Logger::warning("Failed to generate user ID based on candidate "
+                SimpleSAML_Logger::debug("Failed to generate user ID based on candidate "
                     . $idCandidate . " attribute: " . $e->getMessage());
                 continue;
             }
@@ -244,8 +244,9 @@ class sspmod_userid_Auth_Process_OpaqueSmartID extends SimpleSAML_Auth_Processin
             $salt = SimpleSAML\Utils\Config::getSecretSalt();
             $hashedUID = hash("sha256", $smartID.'!'.$salt);
             if (isset($this->scope)) {
-                return $hashedUID.'@'.$this->scope;
+                $hashedUID .= '@'.$this->scope;
             }
+            SimpleSAML_Logger::notice("[OpaqueSmartID] externalId=" . var_export($smartID, true) . ", internalId=" . var_export($hashedUID, true));
             return $hashedUID;
         }
     }
