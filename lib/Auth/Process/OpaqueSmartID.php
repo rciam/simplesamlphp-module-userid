@@ -195,6 +195,7 @@ class sspmod_userid_Auth_Process_OpaqueSmartID extends SimpleSAML_Auth_Processin
         assert('is_array($request)');
         assert('array_key_exists("Attributes", $request)');
 
+        $idpMetadata = $this->getIdPMetadata($request);
         $userId = $this->generateUserId($request['Attributes'], $request);
 
         if (isset($userId)) {
@@ -205,11 +206,13 @@ class sspmod_userid_Auth_Process_OpaqueSmartID extends SimpleSAML_Auth_Processin
             }
             return;
         }
+        $idpEmailAddress = $this->getIdPEmailAddress($idpMetadata);
         $baseUrl = SimpleSAML_Configuration::getInstance()->getString('baseurlpath'
 );
         $this->showError('NOATTRIBUTE', array(
             '%ATTRIBUTES%' => $this->candidates,
             '%IDP%' => $this->getIdPDisplayName($request),
+            '%IDPEMAILADDRESS%' => $idpEmailAddress,
             '%BASEDIR%' => $baseUrl,
             '%RESTARTURL%' => $request[SimpleSAML_Auth_State::RESTART]));
     }
@@ -273,6 +276,34 @@ class sspmod_userid_Auth_Process_OpaqueSmartID extends SimpleSAML_Auth_Processin
         return $idValue;
     }
 
+    private function getIdPEmailAddress($idpMetadata)
+    {
+        $idpEmailAddress = null;
+        if (!empty($idpMetadata['contacts']) && is_array($idpMetadata['contacts'])) {
+            foreach ($idpMetadata['contacts'] as $contact) {
+                if (!empty($contact['contactType']) && !empty($contact['emailAddress'])) {
+                    if ($contact['contactType'] === 'technical') {
+                        $idpEmailAddress = $contact['emailAddress'];
+                        continue;
+                    } elseif ($contact['contactType'] === 'support') {
+                        $idpEmailAddress = $contact['emailAddress'];
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (!empty($idpEmailAddress)) {
+            foreach ($idpEmailAddress as &$idpEmailAddressEntry) {
+                if (substr($idpEmailAddressEntry, 0, 7) === "mailto:") {
+                    $idpEmailAddressEntry = substr($idpEmailAddressEntry, 7);
+                }
+            }
+            $idpEmailAddress = implode(";", $idpEmailAddress);
+        }
+        return $idpEmailAddress;
+    }
+
     private function getIdPDisplayName($request) 
     {
         assert('array_key_exists("entityid", $request["Source"])');
@@ -309,6 +340,18 @@ class sspmod_userid_Auth_Process_OpaqueSmartID extends SimpleSAML_Auth_Processin
         }
 
         return $idpEntityId;
+    }
+
+    private function getIdPMetadata($request)
+    {
+        // If the module is active on a bridge,
+        // $request['saml:sp:IdP'] will contain an entry id for the remote IdP.
+        if (!empty($request['saml:sp:IdP'])) {
+            $idpEntityId = $request['saml:sp:IdP'];
+            return SimpleSAML_Metadata_MetaDataStorageHandler::getMetadataHandler()->getMetaData($idpEntityId, 'saml20-idp-remote');
+        } else {
+            return $request['Source'];
+        }
     }
 
     private function showError($errorCode, $parameters)
