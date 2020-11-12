@@ -293,7 +293,7 @@ class OpaqueSmartID extends \SimpleSAML\Auth\ProcessingFilter
             try {
                 $idValue = $this->parseUserId($attributes[$idCandidate][0]);
             } catch (\Exception $e) {
-                Logger::error("Failed to generate user ID based on candidate "
+                Logger::debug("Failed to generate user ID based on candidate "
                     . $idCandidate . " attribute: " . $e->getMessage());
                 continue;
             }
@@ -311,10 +311,10 @@ class OpaqueSmartID extends \SimpleSAML\Auth\ProcessingFilter
             }
             $salt = Config::getSecretSalt();
             $hashedUID = hash("sha256", $smartID . '!' . $salt);
-            Logger::notice("[OpaqueSmartID] externalId=" . var_export($smartID, true) . ", internalId=" . var_export($hashedUID, true));
             if (isset($this->scope)) {
-                return $hashedUID . '@' . $this->scope;
+                $hashedUID .= '@' . $this->scope;
             }
+            Logger::notice("[OpaqueSmartID] externalId=" . var_export($smartID, true) . ", internalId=" . var_export($hashedUID, true));
             return $hashedUID;
         }
     }
