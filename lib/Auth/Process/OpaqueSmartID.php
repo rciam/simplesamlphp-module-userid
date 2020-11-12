@@ -82,8 +82,8 @@ namespace SimpleSAML\Module\userid\Auth\Process;
  *               'https://www.example2.org',
  *           ],
  *           'idp_tag_whitelist' => [
- *               'example1',
- *               'example2',
+ *               'tag1',
+ *               'tag2',
  *           ],
  *       ],
  *
@@ -101,12 +101,14 @@ class OpaqueSmartID extends \SimpleSAML\Auth\ProcessingFilter
 {
 
     /**
-     * List of tags that the auth process should be executed
+     * If this option is specified, the filter will be executed only if the
+     * authenticating IdP tags match any of the tags in the whitelist.
      */
     private $idpTagWhitelist = [];
 
     /**
-     * List of tags that the auth process should not be executed
+     * If this option is specified, the filter will not be executed if the
+     * authenticating IdP tags match any of the tags in the blacklist.
      */
     private $idpTagBlacklist = [];
 
