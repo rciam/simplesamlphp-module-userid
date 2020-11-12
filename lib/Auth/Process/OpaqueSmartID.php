@@ -275,9 +275,9 @@ class OpaqueSmartID extends \SimpleSAML\Auth\ProcessingFilter
         }
         $idpEmailAddress = $this->getIdPEmailAddress($idpMetadata);
         $baseUrl = Configuration::getInstance()->getString('baseurlpath');
-        $this->showError('NOATTRIBUTE', [
+        $this->showError('NOIDENTIFIER', [
             '%ATTRIBUTES%' => $this->candidates,
-            '%IDP%' => $this->getIdPDisplayName($request),
+            '%IDPNAME%' => $this->getIdPDisplayName($request),
             '%IDPEMAILADDRESS%' => $idpEmailAddress,
             '%BASEDIR%' => $baseUrl,
             '%RESTARTURL%' => $request[State::RESTART]
