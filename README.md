@@ -96,8 +96,8 @@ authproc = [
             'https://www.example2.org',
         ],
         'idp_tag_whitelist' => [
-            'example1',
-            'example2',
+            'tag1',
+            'tag2',
         ],
     ],
 ```

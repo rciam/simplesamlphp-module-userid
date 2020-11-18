@@ -2,6 +2,13 @@
 
 namespace SimpleSAML\Module\userid\Auth\Process;
 
+use SimpleSAML\Auth\ProcessingFilter;
+use SimpleSAML\Auth\State;
+use SimpleSAML\Configuration;
+use SimpleSAML\Logger;
+use SimpleSAML\Metadata\MetaDataStorageHandler;
+use SimpleSAML\XHTML\Template;
+
 /**
  * This is a SimpleSAMLphp authentication processing filter for
  * making attribute(s) mandatory.
@@ -28,14 +35,7 @@ namespace SimpleSAML\Module\userid\Auth\Process;
  *
  * @author Nicolas Liampotis <nliam@grnet.gr>
  */
-
-use SimpleSAML\Auth\State;
-use SimpleSAML\Configuration;
-use SimpleSAML\Logger;
-use SimpleSAML\Metadata\MetaDataStorageHandler;
-use SimpleSAML\XHTML\Template;
-
-class RequiredAttributes extends \SimpleSAML\Auth\ProcessingFilter
+class RequiredAttributes extends ProcessingFilter
 {
 
     /**
@@ -62,14 +62,18 @@ class RequiredAttributes extends \SimpleSAML\Auth\ProcessingFilter
         if (array_key_exists('attributes', $config)) {
             $this->attributes = $config['attributes'];
             if (!is_array($this->attributes)) {
-                throw new Exception('RequiredAttributes authproc configuration error: \'attributes\' should be an array.');
+                throw new Exception(
+                    '[RequiredAttributes] authproc configuration error: \'attributes\' should be an array.'
+                );
             }
         }
 
         if (array_key_exists('custom_resolutions', $config)) {
             $this->customResolutions = $config['custom_resolutions'];
             if (!is_array($this->attributes)) {
-                throw new Exception('RequiredAttributes authproc configuration error: \'custom_resolutions\' should be an array.');
+                throw new Exception(
+                    '[RequiredAttributes] authproc configuration error: \'custom_resolutions\' should be an array.'
+                );
             }
         }
     }
@@ -90,18 +94,18 @@ class RequiredAttributes extends \SimpleSAML\Auth\ProcessingFilter
                 $missingAttributes[] = $attribute;
             }
         }
-        Logger::debug("[RequiredAttributes] missingAttributes=" . var_export($missingAttributes, true));
+        Logger::debug("[RequiredAttributes] process: missingAttributes=" . var_export($missingAttributes, true));
         if (empty($missingAttributes)) {
             return;
         }
 
-        $idpEntityId = $this->getIdPEntityId($request);
-        $idpMetadata = $this->getIdPMetadata($request);
+        $idpEntityId = $this->getIdpEntityId($request);
+        $idpMetadata = $this->getIdpMetadata($request);
         $idpName = $this->getIdPDisplayName($idpMetadata);
         if (is_null($idpName)) {
             $idpName = $idpEntityId;
         }
-        $idpEmailAddress = $this->getIdPEmailAddress($idpMetadata);
+        $idpEmailAddress = $this->getIdpEmailAddress($idpMetadata);
         $baseUrl = Configuration::getInstance()->getString('baseurlpath');
         $errorParams = [
             '%ATTRIBUTES%' => $missingAttributes,
@@ -116,7 +120,7 @@ class RequiredAttributes extends \SimpleSAML\Auth\ProcessingFilter
         $this->showError('MISSINGATTRIBUTE', $errorParams);
     }
 
-    private function getIdPEmailAddress($idpMetadata)
+    private function getIdpEmailAddress($idpMetadata)
     {
         $idpEmailAddress = null;
         if (!empty($idpMetadata['contacts']) && is_array($idpMetadata['contacts'])) {
@@ -170,7 +174,7 @@ class RequiredAttributes extends \SimpleSAML\Auth\ProcessingFilter
         return null;
     }
 
-    private function getIdPEntityId($request)
+    private function getIdpEntityId($request)
     {
         assert('array_key_exists("entityid", $request["Source"])');
 
@@ -183,7 +187,7 @@ class RequiredAttributes extends \SimpleSAML\Auth\ProcessingFilter
         }
     }
 
-    private function getIdPMetadata($request)
+    private function getIdpMetadata($request)
     {
         // If the module is active on a bridge,
         // $request['saml:sp:IdP'] will contain an entry id for the remote IdP.
