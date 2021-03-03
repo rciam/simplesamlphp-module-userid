@@ -318,12 +318,15 @@ class OpaqueSmartID extends ProcessingFilter
             try {
                 $idValue = $this->parseUserId($attributes[$idCandidate][0]);
             } catch (Exception $e) {
-                Logger::debug("[OpaqueSmartID] generateUserId: Failed to generate user ID based on candidate "
-                    . $idCandidate . " attribute: " . $e->getMessage());
+                Logger::debug(
+                    "[OpaqueSmartID] generateUserId: Failed to generate user ID based on candidate "
+                    . $idCandidate . " attribute: " . $e->getMessage()
+                );
                 continue;
             }
-            Logger::debug("[OpaqueSmartID] generateUserId: Generating opaque user ID based on "
-                . $idCandidate . ': ' . $idValue);
+            Logger::debug(
+                "[OpaqueSmartID] generateUserId: Generating opaque user ID based on " . $idCandidate . ': ' . $idValue
+            );
             $authority = null;
             if ($this->addAuthority) {
                 $authority = $this->getAuthority($request);
@@ -370,8 +373,9 @@ class OpaqueSmartID extends ProcessingFilter
                 throw new Exception('[OpaqueSmartID] parseUserId: Unsupported NameID format');
             }
         } else {
-            throw new Exception('[OpaqueSmartID] parseUserId: Unsupported attribute value type: '
-                . get_class($attribute));
+            throw new Exception(
+                '[OpaqueSmartID] parseUserId: Unsupported attribute value type: ' . get_class($attribute)
+            );
         }
         return $idValue;
     }
