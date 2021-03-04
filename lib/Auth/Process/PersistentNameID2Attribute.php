@@ -80,7 +80,7 @@ class PersistentNameID2Attribute extends ProcessingFilter
 
         if (
             !isset($state['saml:sp:NameID'])
-            || $state['saml:sp:NameID']->Format !== Constants::NAMEID_PERSISTENT
+            || $state['saml:sp:NameID']->getFormat() !== Constants::NAMEID_PERSISTENT
         ) {
             Logger::warning(
                 '[PersistentNameID2Attribute] process: Unable to generate ' . $this->attribute
@@ -92,6 +92,6 @@ class PersistentNameID2Attribute extends ProcessingFilter
         // @var \SAML2\XML\saml\NameID $nameID
         $spNameId = $state['saml:sp:NameID'];
 
-        $state['Attributes'][$this->attribute] = [(!$this->nameId) ? $spNameId->value : $spNameId];
+        $state['Attributes'][$this->attribute] = [(!$this->nameId) ? $spNameId->getValue() : $spNameId];
     }
 }
