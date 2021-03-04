@@ -318,12 +318,15 @@ class OpaqueSmartID extends ProcessingFilter
             try {
                 $idValue = $this->parseUserId($attributes[$idCandidate][0]);
             } catch (Exception $e) {
-                Logger::debug("[OpaqueSmartID] generateUserId: Failed to generate user ID based on candidate "
-                    . $idCandidate . " attribute: " . $e->getMessage());
+                Logger::debug(
+                    "[OpaqueSmartID] generateUserId: Failed to generate user ID based on candidate "
+                    . $idCandidate . " attribute: " . $e->getMessage()
+                );
                 continue;
             }
-            Logger::debug("[OpaqueSmartID] generateUserId: Generating opaque user ID based on "
-                . $idCandidate . ': ' . $idValue);
+            Logger::debug(
+                "[OpaqueSmartID] generateUserId: Generating opaque user ID based on " . $idCandidate . ': ' . $idValue
+            );
             $authority = null;
             if ($this->addAuthority) {
                 $authority = $this->getAuthority($request);
@@ -359,20 +362,20 @@ class OpaqueSmartID extends ProcessingFilter
     {
         if (is_string($attribute) || is_int($attribute)) {
             $idValue = $attribute;
-        } elseif (is_a($attribute, 'DOMNodeList') && $attribute->length === 1) {
-            $nameId = new SAML2_XML_saml_NameID($attribute->item(0));
+        } elseif (is_a($attribute, '\SAML2\XML\saml\NameID')) {
             if (
-                isset($nameId->Format)
-                && $nameId->Format === SAML2_Const::NAMEID_PERSISTENT
-                && !empty($nameId->value)
+                !empty($attribute->getFormat())
+                && $attribute->getFormat() === \SAML2\Constants::NAMEID_PERSISTENT
+                && !empty($attribute->getValue())
             ) {
-                $idValue = $nameId->value;
+                $idValue = $attribute->getValue();
             } else {
                 throw new Exception('[OpaqueSmartID] parseUserId: Unsupported NameID format');
             }
         } else {
-            throw new Exception('[OpaqueSmartID] parseUserId: Unsupported attribute value type: '
-                . get_class($attribute));
+            throw new Exception(
+                '[OpaqueSmartID] parseUserId: Unsupported attribute value type: ' . get_class($attribute)
+            );
         }
         return $idValue;
     }
