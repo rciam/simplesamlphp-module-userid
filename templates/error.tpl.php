@@ -7,10 +7,13 @@ $this->data['head'] = <<<EOF
 EOF;
 
 $this->includeAtTemplateBase('includes/header.php');
+$translationParams = [
+    '%IDPNAME%' => $this->data['parameters']['%IDPNAME%'],
+];
 ?>
 <h2><?php echo $this->t('{userid:error:title}'); ?></h2>
 <?php
-echo ('<p>' . $this->t('{userid:error:descr_' . $this->data['errorCode'] . '}', $this->data['parameters']) . '</p>');
+echo ('<p>' . $this->t('{userid:error:descr_' . $this->data['errorCode'] . '}', $translationParams) . '</p>');
 
 echo (
     '<p><a href="' . htmlspecialchars($this->data['parameters']['%BASEDIR%'] . 'saml2/idp/initSLO.php?RelayState='
