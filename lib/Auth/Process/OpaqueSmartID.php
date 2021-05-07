@@ -117,6 +117,10 @@ class OpaqueSmartID extends ProcessingFilter
     // part of the user id source.
     private $skipAuthorityList = [];
 
+    // List of IdP that have modified their entityID.
+    // The array keys contain the new entityIDs and the values the old ones
+    private $authorityMap = [];
+
     /**
      * The list of candidate attribute(s) to be used for the new ID attribute.
      */
@@ -188,6 +192,15 @@ class OpaqueSmartID extends ProcessingFilter
             if (!is_array($this->skipAuthorityList)) {
                 throw new Exception(
                     '[OpaqueSmartID] authproc configuration error: \'skip_authority_list\' should be an array.'
+                );
+            }
+        }
+
+        if (array_key_exists('authority_map', $config)) {
+            $this->authorityMap = $config['authority_map'];
+            if (!is_array($this->authorityMap)) {
+                throw new Exception(
+                    '[OpaqueSmartID] authproc configuration error: \'authority_map\' should be an array.'
                 );
             }
         }
@@ -330,6 +343,13 @@ class OpaqueSmartID extends ProcessingFilter
             $authority = null;
             if ($this->addAuthority) {
                 $authority = $this->getAuthority($request);
+            }
+            if (!empty($authority) && array_key_exists($authority, $this->authorityMap)) {
+                Logger::debug(
+                    "[OpaqueSmartID] generateUserId: authorityMap: oldAuthority=" . var_export($authority, true)
+                    . " newAuthority=" . var_export($this->authorityMap[$authority], true)
+                );
+                $authority = $this->authorityMap[$authority];
             }
             if (!empty($authority) && !in_array($authority, $this->skipAuthorityList, true)) {
                 Logger::debug("[OpaqueSmartID] generateUserId: authority=" . var_export($authority, true));
