@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Replace modified entityIDs with the old ones
+- Add support for migrating users from IdPs with updated entityID
 
 ## [v3.0.4] - 2021-03-08
 
