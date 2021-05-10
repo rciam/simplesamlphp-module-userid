@@ -60,6 +60,9 @@ The following configuration options are available:
   excluded from the authority part of the user id source.
 - `idp_tag_whitelist`: Optional, an array of tags that the auth process
   should be executed
+- `authority_map`: Optional, an array of IdP entityIDs that have been
+  modified. The keys of the array are the new entityIDs and the values are the
+  old ones.
 - `idp_tag_blacklist`: Optional, an array of tags that the auth process
   should not be executed
 
