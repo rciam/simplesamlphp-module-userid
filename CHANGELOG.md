@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v3.1.0] - 2021-05-10
+
+### Added
+
+- Support for retaining authority identifier when IdP entityId changes
+
 ## [v3.0.4] - 2021-03-08
 
 ### Fixed
@@ -29,7 +35,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Improve handling of idpTagBlacklist/idpTagWhitelist 
+- Improve handling of idpTagBlacklist/idpTagWhitelist
 
 ## [v3.0.0] - 2019-01-20
 
@@ -70,7 +76,8 @@ This version is compatible with [SimpleSAMLphp v1.15](https://simplesamlphp.org/
 ### Added
 
 - OpaqueSmartID class
-  - Add support for excluding IdPs from the authority part of the user id source based on their tags
+  - Add support for excluding IdPs from the authority part of the user id
+    source based on their tags
 - Add instructions for `PersistentNameID2Attribute` class
 - Add `RequiredAttributes` class
 
@@ -87,7 +94,8 @@ This version is compatible with [SimpleSAMLphp v1.14](https://simplesamlphp.org/
 - OpaqueSmartID class
   - Provides consistent user identifiers
   - Support for SAML 2.0 Persistent NameIDs/ePTIDs
-  - List of IdP entityIDs that should be excluded from the authority part of the user id source.
+  - List of IdP entityIDs that should be excluded from the authority part of
+    the user id source.
 - PersistentNameID2Attribute class
   - Generates an attribute from the persistent NameID
 - Use template for error page
