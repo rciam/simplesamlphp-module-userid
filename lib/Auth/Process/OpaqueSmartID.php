@@ -346,8 +346,8 @@ class OpaqueSmartID extends ProcessingFilter
             }
             if (!empty($authority) && array_key_exists($authority, $this->authorityMap)) {
                 Logger::notice(
-                    "[OpaqueSmartID] generateUserId: authorityMap: oldAuthority=" . var_export($authority, true)
-                    . " newAuthority=" . var_export($this->authorityMap[$authority], true)
+                    "[OpaqueSmartID] generateUserId: authorityMap: " . var_export($authority, true)
+                    . " = " . var_export($this->authorityMap[$authority], true)
                 );
                 $authority = $this->authorityMap[$authority];
             }
