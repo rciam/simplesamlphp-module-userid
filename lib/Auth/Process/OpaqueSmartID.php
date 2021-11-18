@@ -43,6 +43,16 @@ use SimpleSAML\XHTML\Template;
  *     - `facebook_targetedID`
  *     - `windowslive_targetedID`
  *     - `twitter_targetedID`
+ * - `copyCandidates`: An array of attributes names to consider as the user
+ *   identifier attribute for whitelisted/blacklisted IdP tags. Defaults to:
+ *     - `eduPersonUniqueId`
+ *     - `eduPersonPrincipalName`
+ *     - `eduPersonTargetedID`
+ *     - `openid`
+ *     - `linkedin_targetedID`
+ *     - `facebook_targetedID`
+ *     - `windowslive_targetedID`
+ *     - `twitter_targetedID`
  * - `id_attribute`: A string to use as the name of the newly added attribute.
  *    Defaults to `smart_id`.
  * - `add_authority`: A boolean to indicate whether or not to append the SAML
@@ -78,6 +88,11 @@ use SimpleSAML\XHTML\Template;
  *       '60' => [
  *           'class' => 'uid:OpaqueSmartID',
  *           'candidates' => [
+ *               'eduPersonUniqueId',
+ *               'eduPersonPrincipalName',
+ *               'eduPersonTargetedID',
+ *           ],
+ *           'copyCandidates' => [
  *               'eduPersonUniqueId',
  *               'eduPersonPrincipalName',
  *               'eduPersonTargetedID',
@@ -125,6 +140,21 @@ class OpaqueSmartID extends ProcessingFilter
      * The list of candidate attribute(s) to be used for the new ID attribute.
      */
     private $candidates = [
+        'eduPersonUniqueId',
+        'eduPersonPrincipalName',
+        'eduPersonTargetedID',
+        'openid',
+        'linkedin_targetedID',
+        'facebook_targetedID',
+        'windowslive_targetedID',
+        'twitter_targetedID',
+    ];
+
+    /**
+     * The list of candidate attribute(s) to be used to copy the user ID for
+     * whitelisted/blacklisted IdP tags.
+     */
+    private $copyCandidates = [
         'eduPersonUniqueId',
         'eduPersonPrincipalName',
         'eduPersonTargetedID',
@@ -212,6 +242,13 @@ class OpaqueSmartID extends ProcessingFilter
             }
         }
 
+        if (array_key_exists('copyCandidates', $config)) {
+            $this->copyCandidates = $config['copyCandidates'];
+            if (!is_array($this->copyCandidates)) {
+                throw new Exception('[OpaqueSmartID] authproc configuration error: \'copyCandidates\' should be an array.');
+            }
+        }
+
         if (array_key_exists('id_attribute', $config)) {
             $this->idAttribute = $config['id_attribute'];
             if (!is_string($this->idAttribute)) {
@@ -273,8 +310,11 @@ class OpaqueSmartID extends ProcessingFilter
         // if IdP tag is blacklisted
         if (!empty($this->idpTagBlacklist)) {
             if (!empty(array_intersect($this->idpTagBlacklist, $idpTags))) {
-                if ($this->setUserIdAttribute && !empty($request['Attributes'][$this->idAttribute])) {
-                    $request['UserID'] = $request['Attributes'][$this->idAttribute][0];
+                $userId = $this->copyUserId($request['Attributes']);
+                if (!empty($userId)) {
+                    $request['UserID'] = [$userId];
+                    $request['Attributes'][$this->idAttribute] = [$userId];
+                    $request['rciamAttributes']['cuid'] = [$userId];
                 }
                 Logger::debug(
                     "[OpaqueSmartID] process: Skipping IdP with tags " . var_export($idpTags, true) . " - blacklisted"
@@ -287,8 +327,11 @@ class OpaqueSmartID extends ProcessingFilter
         // if IdP tag is *not* whitelisted
         if (!empty($this->idpTagWhitelist)) {
             if (empty(array_intersect($this->idpTagWhitelist, $idpTags))) {
-                if ($this->setUserIdAttribute && !empty($request['Attributes'][$this->idAttribute])) {
-                    $request['UserID'] = $request['Attributes'][$this->idAttribute][0];
+                $userId = $this->copyUserId($request['Attributes']);
+                if (!empty($userId)) {
+                    $request['UserID'] = [$userId];
+                    $request['Attributes'][$this->idAttribute] = [$userId];
+                    $request['rciamAttributes']['cuid'] = [$userId];
                 }
                 Logger::debug(
                     "[OpaqueSmartID] process: Skipping IdP with tags " . var_export($idpTags, true)
@@ -367,6 +410,28 @@ class OpaqueSmartID extends ProcessingFilter
                 . ", internalId=" . var_export($hashedUid, true)
             );
             return $hashedUid;
+        }
+    }
+
+    private function copyUserId($attributes)
+    {
+        foreach ($this->copyCandidates as $idCandidate) {
+            if (empty($attributes[$idCandidate][0])) {
+                continue;
+            }
+            try {
+                $idValue = $this->parseUserId($attributes[$idCandidate][0]);
+            } catch (Exception $e) {
+                Logger::debug(
+                    "[OpaqueSmartID] copyUserId: Failed to copy user ID based on candidate "
+                    . $idCandidate . " attribute: " . $e->getMessage()
+                );
+                continue;
+            }
+            Logger::debug(
+                "[OpaqueSmartID] copyUserId: Copying user ID based on " . $idCandidate . ': ' . $idValue
+            );
+            return $idValue;
         }
     }
 
