@@ -298,37 +298,29 @@ class OpaqueSmartID extends ProcessingFilter
 
         // If IdP tag blacklist is defined then skip OpaqueUserID generation
         // if IdP tag is blacklisted
-        if (!empty($this->idpTagBlacklist)) {
-            if (!empty(array_intersect($this->idpTagBlacklist, $idpTags))) {
-                $userId = $this->copyUserId($request['Attributes']);
-                if (!empty($userId)) {
-                    $request['UserID'] = [$userId];
-                    $request['Attributes'][$this->idAttribute] = [$userId];
-                    $request['rciamAttributes']['cuid'] = [$userId];
-                }
-                Logger::debug(
-                    "[OpaqueSmartID] process: Skipping IdP with tags " . var_export($idpTags, true) . " - blacklisted"
-                );
-                return;
-            }
+        if (
+            !empty($this->idpTagBlacklist)
+            && !empty(array_intersect($this->idpTagBlacklist, $idpTags))
+        ) {
+            Logger::debug(
+                "[OpaqueSmartID] process: Skipping IdP with tags " . var_export($idpTags, true) . " - blacklisted"
+            );
+            $this->copyUserId($request['Attributes'], $request);
+            return;
         }
 
         // If IdP tag whitelist is defined then skip OpaqueUserID generation
         // if IdP tag is *not* whitelisted
-        if (!empty($this->idpTagWhitelist)) {
-            if (empty(array_intersect($this->idpTagWhitelist, $idpTags))) {
-                $userId = $this->copyUserId($request['Attributes']);
-                if (!empty($userId)) {
-                    $request['UserID'] = [$userId];
-                    $request['Attributes'][$this->idAttribute] = [$userId];
-                    $request['rciamAttributes']['cuid'] = [$userId];
-                }
-                Logger::debug(
-                    "[OpaqueSmartID] process: Skipping IdP with tags " . var_export($idpTags, true)
-                    . " - not it whitelist"
-                );
-                return;
-            }
+        if (
+            !empty($this->idpTagWhitelist)
+            && empty(array_intersect($this->idpTagWhitelist, $idpTags))
+        ) {
+            Logger::debug(
+                "[OpaqueSmartID] process: Skipping IdP with tags " . var_export($idpTags, true)
+                . " - not it whitelist"
+            );
+            $this->copyUserId($request['Attributes'], $request);
+            return;
         }
 
         $userId = $this->generateUserId($request['Attributes'], $request);
@@ -403,7 +395,7 @@ class OpaqueSmartID extends ProcessingFilter
         }
     }
 
-    private function copyUserId($attributes)
+    private function copyUserId($attributes, $request)
     {
         foreach ($this->cuidCandidates as $idCandidate) {
             if (empty($attributes[$idCandidate][0])) {
@@ -413,7 +405,9 @@ class OpaqueSmartID extends ProcessingFilter
             Logger::debug(
                 "[OpaqueSmartID] copyUserId: Copying user ID based on " . $idCandidate . ': ' . $idValue
             );
-            return $idValue;
+            $request['UserID'] = [$idValue];
+            $request['Attributes'][$this->idAttribute] = [$idValue];
+            $request['rciamAttributes']['cuid'] = [$idValue];
         }
     }
 
