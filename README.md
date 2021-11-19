@@ -39,14 +39,9 @@ The following configuration options are available:
   - `twitter_targetedID`
 - `copyCandidates`: An array of attributes names to consider as the user
   identifier attribute for whitelisted/blacklisted IdP tags. Defaults to:
+  - `voPersonID`
+  - `subject-id`
   - `eduPersonUniqueId`
-  - `eduPersonPrincipalName`
-  - `eduPersonTargetedID`
-  - `openid`
-  - `linkedin_targetedID`
-  - `facebook_targetedID`
-  - `windowslive_targetedID`
-  - `twitter_targetedID`
 - `id_attribute`. A string to use as the name of the newly added attribute.
   Defaults to `smart_id`.
 - `add_authority`: A boolean to indicate whether or not to append the SAML
@@ -101,9 +96,9 @@ authproc = [
             'eduPersonTargetedID',
         ],
         'copyCandidates' => [
+            'voPersonID',
+            'subject-id',
             'eduPersonUniqueId',
-            'eduPersonPrincipalName',
-            'eduPersonTargetedID',
         ],
         'id_attribute' => 'eduPersonUniqueId',
         'add_candidate' => false,
