@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Add `copyCandidates` option
+- Add `cuidCandidates` option
 
 ## [v3.1.0] - 2021-05-10
 

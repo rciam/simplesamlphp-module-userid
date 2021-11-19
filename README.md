@@ -37,7 +37,7 @@ The following configuration options are available:
   - `facebook_targetedID`
   - `windowslive_targetedID`
   - `twitter_targetedID`
-- `copyCandidates`: An array of attributes names to consider as the user
+- `cuidCandidates`: An array of attributes names to consider as the user
   identifier attribute for whitelisted/blacklisted IdP tags. Defaults to:
   - `voPersonID`
   - `subject-id`
@@ -95,7 +95,7 @@ authproc = [
             'eduPersonPrincipalName',
             'eduPersonTargetedID',
         ],
-        'copyCandidates' => [
+        'cuidCandidates' => [
             'voPersonID',
             'subject-id',
             'eduPersonUniqueId',

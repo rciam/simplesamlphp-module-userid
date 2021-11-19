@@ -43,7 +43,7 @@ use SimpleSAML\XHTML\Template;
  *     - `facebook_targetedID`
  *     - `windowslive_targetedID`
  *     - `twitter_targetedID`
- * - `copyCandidates`: An array of attributes names to consider as the user
+ * - `cuidCandidates`: An array of attributes names to consider as the user
  *   identifier attribute for whitelisted/blacklisted IdP tags. Defaults to:
  *     - `voPersonID`
  *     - `subject-id`
@@ -87,7 +87,7 @@ use SimpleSAML\XHTML\Template;
  *               'eduPersonPrincipalName',
  *               'eduPersonTargetedID',
  *           ],
- *           'copyCandidates' => [
+ *           'cuidCandidates' => [
  *               'voPersonID',
  *               'subject-id',
  *               'eduPersonUniqueId',
@@ -149,7 +149,7 @@ class OpaqueSmartID extends ProcessingFilter
      * The list of candidate attribute(s) to be used to copy the user ID for
      * whitelisted/blacklisted IdP tags.
      */
-    private $copyCandidates = [
+    private $cuidCandidates = [
         'voPersonID',
         'subject-id',
         'eduPersonUniqueId',
@@ -232,10 +232,10 @@ class OpaqueSmartID extends ProcessingFilter
             }
         }
 
-        if (array_key_exists('copyCandidates', $config)) {
-            $this->copyCandidates = $config['copyCandidates'];
-            if (!is_array($this->copyCandidates)) {
-                throw new Exception('[OpaqueSmartID] authproc configuration error: \'copyCandidates\' should be an array.');
+        if (array_key_exists('cuidCandidates', $config)) {
+            $this->cuidCandidates = $config['cuidCandidates'];
+            if (!is_array($this->cuidCandidates)) {
+                throw new Exception('[OpaqueSmartID] authproc configuration error: \'cuidCandidates\' should be an array.');
             }
         }
 
@@ -405,7 +405,7 @@ class OpaqueSmartID extends ProcessingFilter
 
     private function copyUserId($attributes)
     {
-        foreach ($this->copyCandidates as $idCandidate) {
+        foreach ($this->cuidCandidates as $idCandidate) {
             if (empty($attributes[$idCandidate][0])) {
                 continue;
             }
