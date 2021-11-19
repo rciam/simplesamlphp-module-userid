@@ -409,15 +409,7 @@ class OpaqueSmartID extends ProcessingFilter
             if (empty($attributes[$idCandidate][0])) {
                 continue;
             }
-            try {
-                $idValue = $this->parseUserId($attributes[$idCandidate][0]);
-            } catch (Exception $e) {
-                Logger::debug(
-                    "[OpaqueSmartID] copyUserId: Failed to copy user ID based on candidate "
-                    . $idCandidate . " attribute: " . $e->getMessage()
-                );
-                continue;
-            }
+            $idValue = $attributes[$idCandidate][0];
             Logger::debug(
                 "[OpaqueSmartID] copyUserId: Copying user ID based on " . $idCandidate . ': ' . $idValue
             );
