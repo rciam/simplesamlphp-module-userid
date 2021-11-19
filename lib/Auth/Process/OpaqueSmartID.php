@@ -305,7 +305,7 @@ class OpaqueSmartID extends ProcessingFilter
             Logger::debug(
                 "[OpaqueSmartID] process: Skipping IdP with tags " . var_export($idpTags, true) . " - blacklisted"
             );
-            $this->copyUserId($request['Attributes'], $request);
+            $this->copyUserId($request['Attributes'], $request, $idpMetadata);
             return;
         }
 
@@ -319,7 +319,7 @@ class OpaqueSmartID extends ProcessingFilter
                 "[OpaqueSmartID] process: Skipping IdP with tags " . var_export($idpTags, true)
                 . " - not it whitelist"
             );
-            $this->copyUserId($request['Attributes'], $request);
+            $this->copyUserId($request['Attributes'], $request, $idpMetadata);
             return;
         }
 
@@ -395,7 +395,7 @@ class OpaqueSmartID extends ProcessingFilter
         }
     }
 
-    private function copyUserId($attributes, $request)
+    private function copyUserId($attributes, $request, $idpMetadata)
     {
         foreach ($this->cuidCandidates as $idCandidate) {
             if (empty($attributes[$idCandidate][0])) {
@@ -408,7 +408,18 @@ class OpaqueSmartID extends ProcessingFilter
             $request['UserID'] = [$idValue];
             $request['Attributes'][$this->idAttribute] = [$idValue];
             $request['rciamAttributes']['cuid'] = [$idValue];
+            return;
         }
+        $this->showError(
+            'NOIDENTIFIER',
+            [
+                '%ATTRIBUTES%' => $this->cuidCandidates,
+                '%IDPNAME%' => $this->getIdPDisplayName($request),
+                '%IDPEMAILADDRESS%' => $this->getIdPEmailAddress($idpMetadata),
+                '%BASEDIR%' => Configuration::getInstance()->getString('baseurlpath'),
+                '%RESTARTURL%' => $request[State::RESTART]
+            ]
+        );
     }
 
     private function getAuthority($request)
