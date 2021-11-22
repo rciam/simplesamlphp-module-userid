@@ -37,6 +37,11 @@ The following configuration options are available:
   - `facebook_targetedID`
   - `windowslive_targetedID`
   - `twitter_targetedID`
+- `cuidCandidates`: An array of attributes names to consider as the user
+  identifier attribute for whitelisted/blacklisted IdP tags. Defaults to:
+  - `voPersonID`
+  - `subject-id`
+  - `eduPersonUniqueId`
 - `id_attribute`. A string to use as the name of the newly added attribute.
   Defaults to `smart_id`.
 - `add_authority`: A boolean to indicate whether or not to append the SAML
@@ -89,6 +94,11 @@ authproc = [
             'eduPersonUniqueId',
             'eduPersonPrincipalName',
             'eduPersonTargetedID',
+        ],
+        'cuidCandidates' => [
+            'voPersonID',
+            'subject-id',
+            'eduPersonUniqueId',
         ],
         'id_attribute' => 'eduPersonUniqueId',
         'add_candidate' => false,
