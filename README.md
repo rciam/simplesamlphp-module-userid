@@ -1,11 +1,8 @@
 # simplesamlphp-module-userid
 
-A SimpleSAMLphp authentication processing filter for generating long-lived,
-non-reassignable, non-targeted, opaque and globally unique user identifiers
-based on the attributes received from the Identity Provider (IdP). The
-identifier is generated using the first non-empty attribute from a given
-list of attributes. At least one non-empty attribute is required, otherwise
-authentication fails with an exception.
+A SimpleSAMLphp module containing authentication processing filters for
+managing user identifier information based on the attributes received from
+the Identity Provider (IdP).
 
 ## OpaqueSmartID
 
@@ -23,12 +20,22 @@ following identifier properties:
   in an opaque 64-character long string that by itself provides no information about
   the identified user.
 
+To support these properties, the identifier is generated using the first
+non-empty attribute from a given list of candidate attributes (`candidates`).
+The filter can be configured to skip the generation process by
+including/excluding certain IdPs. In this case, the persistent user identifier
+value is copied (pass-through) from another list of candidate attributes
+(`cuid_candidates`).
+
+In both cases, at least one non-empty attribute is required, otherwise
+authentication fails with an exception.
+
 ### Configuration
 
 The following configuration options are available:
 
-- `candidates`: An array of attributes names to consider as the user
-  identifier attribute. Defaults to:
+- `candidates`: An array of attributes names to consider for generating the
+  user identifier attribute. Defaults to:
   - `eduPersonUniqueId`
   - `eduPersonPrincipalName`
   - `eduPersonTargetedID`
@@ -37,7 +44,7 @@ The following configuration options are available:
   - `facebook_targetedID`
   - `windowslive_targetedID`
   - `twitter_targetedID`
-- `cuidCandidates`: An array of attributes names to consider as the user
+- `cuid_candidates`: An array of attributes names to consider as the user
   identifier attribute for whitelisted/blacklisted IdP tags. Defaults to:
   - `voPersonID`
   - `subject-id`
@@ -95,7 +102,7 @@ authproc = [
             'eduPersonPrincipalName',
             'eduPersonTargetedID',
         ],
-        'cuidCandidates' => [
+        'cuid_candidates' => [
             'voPersonID',
             'subject-id',
             'eduPersonUniqueId',

@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Add `cuidCandidates` option
+- Add `cuid_candidates` option containing a list of candidate attributes to consider for the persistent user identifier. The first non-empty value from the candidates list will be copied (pass-through) to the target `id_attribute`.
 
 ## [v3.1.0] - 2021-05-10
 
