@@ -237,6 +237,7 @@ class OpaqueSmartID extends ProcessingFilter
 
         if (isset($userId)) {
             $request['Attributes'][$this->idAttribute] = [$userId];
+            $request['rciamAttributes']['cuid'] = [$userId];
             // TODO: Remove this in SSP 2.0
             if ($this->setUserIdAttribute) {
                 $request['UserID'] = $userId;
