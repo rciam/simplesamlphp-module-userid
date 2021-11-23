@@ -146,7 +146,9 @@ class OpaqueSmartID extends ProcessingFilter
         if (array_key_exists('cuid_candidates', $config)) {
             $this->cuidCandidates = $config['cuid_candidates'];
             if (!is_array($this->cuidCandidates)) {
-                throw new Exception('[OpaqueSmartID] authproc configuration error: \'cuid_candidates\' should be an array.');
+                throw new Exception(
+                    '[OpaqueSmartID] authproc configuration error: \'cuid_candidates\' should be an array.'
+                );
             }
         }
 
