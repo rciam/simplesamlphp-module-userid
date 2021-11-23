@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Save CUID after generating the User ID
 
+### Fixed
+
+- Save `$state` in `copyUserId()`
+
 ## [v3.2.0] - 2021-11-23
 
 ### Added
