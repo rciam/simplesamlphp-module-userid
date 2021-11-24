@@ -2,7 +2,6 @@
 
 namespace SimpleSAML\Module\userid\Auth\Process;
 
-use SimpleSAML\Auth\ProcessingChain;
 use SimpleSAML\Auth\ProcessingFilter;
 use SimpleSAML\Auth\State;
 use SimpleSAML\Configuration;
@@ -309,7 +308,7 @@ class OpaqueSmartID extends ProcessingFilter
         }
     }
 
-    private function copyUserId($attributes, $request, $idpMetadata)
+    private function copyUserId($attributes, &$request, $idpMetadata)
     {
         foreach ($this->cuidCandidates as $idCandidate) {
             if (empty($attributes[$idCandidate][0])) {
@@ -322,7 +321,6 @@ class OpaqueSmartID extends ProcessingFilter
             $request['UserID'] = [$idValue];
             $request['Attributes'][$this->idAttribute] = [$idValue];
             $request['rciamAttributes']['cuid'] = [$idValue];
-            ProcessingChain::resumeProcessing($request);
             return;
         }
         $this->showError(
