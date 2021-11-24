@@ -235,7 +235,7 @@ class OpaqueSmartID extends ProcessingFilter
             return;
         }
 
-        $userId = $this->generateUserId($request['Attributes'], $request);
+        $userId = $this->generateUserId($request);
 
         if (isset($userId)) {
             $request['Attributes'][$this->idAttribute] = [$userId];
@@ -260,14 +260,14 @@ class OpaqueSmartID extends ProcessingFilter
         );
     }
 
-    private function generateUserId($attributes, $request)
+    private function generateUserId($request)
     {
         foreach ($this->candidates as $idCandidate) {
-            if (empty($attributes[$idCandidate][0])) {
+            if (empty($request['Attributes'][$idCandidate][0])) {
                 continue;
             }
             try {
-                $idValue = $this->parseUserId($attributes[$idCandidate][0]);
+                $idValue = $this->parseUserId($request['Attributes'][$idCandidate][0]);
             } catch (Exception $e) {
                 Logger::debug(
                     "[OpaqueSmartID] generateUserId: Failed to generate user ID based on candidate "
