@@ -145,7 +145,9 @@ class OpaqueSmartID extends ProcessingFilter
         if (array_key_exists('cuid_candidates', $config)) {
             $this->cuidCandidates = $config['cuid_candidates'];
             if (!is_array($this->cuidCandidates)) {
-                throw new Exception('[OpaqueSmartID] authproc configuration error: \'cuid_candidates\' should be an array.');
+                throw new Exception(
+                    '[OpaqueSmartID] authproc configuration error: \'cuid_candidates\' should be an array.'
+                );
             }
         }
 
@@ -215,7 +217,7 @@ class OpaqueSmartID extends ProcessingFilter
             Logger::debug(
                 "[OpaqueSmartID] process: Skipping IdP with tags " . var_export($idpTags, true) . " - blacklisted"
             );
-            $this->copyUserId($request['Attributes'], $request, $idpMetadata);
+            $this->copyUserId($request, $idpMetadata);
             return;
         }
 
@@ -229,14 +231,15 @@ class OpaqueSmartID extends ProcessingFilter
                 "[OpaqueSmartID] process: Skipping IdP with tags " . var_export($idpTags, true)
                 . " - not it whitelist"
             );
-            $this->copyUserId($request['Attributes'], $request, $idpMetadata);
+            $this->copyUserId($request, $idpMetadata);
             return;
         }
 
-        $userId = $this->generateUserId($request['Attributes'], $request);
+        $userId = $this->generateUserId($request);
 
         if (isset($userId)) {
             $request['Attributes'][$this->idAttribute] = [$userId];
+            $request['rciamAttributes']['cuid'] = [$userId];
             // TODO: Remove this in SSP 2.0
             if ($this->setUserIdAttribute) {
                 $request['UserID'] = $userId;
@@ -257,14 +260,14 @@ class OpaqueSmartID extends ProcessingFilter
         );
     }
 
-    private function generateUserId($attributes, $request)
+    private function generateUserId($request)
     {
         foreach ($this->candidates as $idCandidate) {
-            if (empty($attributes[$idCandidate][0])) {
+            if (empty($request['Attributes'][$idCandidate][0])) {
                 continue;
             }
             try {
-                $idValue = $this->parseUserId($attributes[$idCandidate][0]);
+                $idValue = $this->parseUserId($request['Attributes'][$idCandidate][0]);
             } catch (Exception $e) {
                 Logger::debug(
                     "[OpaqueSmartID] generateUserId: Failed to generate user ID based on candidate "
@@ -305,13 +308,13 @@ class OpaqueSmartID extends ProcessingFilter
         }
     }
 
-    private function copyUserId($attributes, $request, $idpMetadata)
+    private function copyUserId(&$request, $idpMetadata)
     {
         foreach ($this->cuidCandidates as $idCandidate) {
-            if (empty($attributes[$idCandidate][0])) {
+            if (empty($request['Attributes'][$idCandidate][0])) {
                 continue;
             }
-            $idValue = $attributes[$idCandidate][0];
+            $idValue = $request['Attributes'][$idCandidate][0];
             Logger::debug(
                 "[OpaqueSmartID] copyUserId: Copying user ID based on " . $idCandidate . ': ' . $idValue
             );
