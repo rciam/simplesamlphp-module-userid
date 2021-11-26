@@ -5,11 +5,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v3.2.1] - 2021-11-26
+
+### Changed
+
+- Refactor `copyUserId()` function
+- Refactor `generateUserId()` function
+
+### Fixed
+
+- Save generated User ID in RCIAM state attributes
+- Save `$state` in `copyUserId()`
+
 ## [v3.2.0] - 2021-11-23
 
 ### Added
 
-- Add `cuid_candidates` option containing a list of candidate attributes to consider for the persistent user identifier. The first non-empty value from the candidates list will be copied (pass-through) to the target `id_attribute`.
+- Add `cuid_candidates` option containing a list of candidate attributes to
+  consider for the persistent user identifier. The first non-empty value from
+  the candidates list will be copied (pass-through) to the target
+  `id_attribute`.
 
 ## [v3.1.0] - 2021-05-10
 
