@@ -318,7 +318,7 @@ class OpaqueSmartID extends ProcessingFilter
             Logger::debug(
                 "[OpaqueSmartID] copyUserId: Copying user ID based on " . $idCandidate . ': ' . $idValue
             );
-            $request['UserID'] = [$idValue];
+            $request['UserID'] = $idValue;
             $request['Attributes'][$this->idAttribute] = [$idValue];
             $request['rciamAttributes']['cuid'] = [$idValue];
             return;
