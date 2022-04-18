@@ -44,6 +44,10 @@ The following configuration options are available:
   - `facebook_targetedID`
   - `windowslive_targetedID`
   - `twitter_targetedID`
+- `authority_candidate_map`: An array of IdP entityIDs which are mapped to
+  specific attributes names to consider for generating the user identifier.
+  Defaults to the empty array. If no IdP in this map matches, then the user
+  identifier is generated based on the attributes specified in `candidates`.
 - `cuid_candidates`: An array of attributes names to consider as the user
   identifier attribute for whitelisted/blacklisted IdP tags. Defaults to:
   - `voPersonID`

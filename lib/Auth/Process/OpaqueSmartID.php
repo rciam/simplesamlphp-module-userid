@@ -56,6 +56,12 @@ class OpaqueSmartID extends ProcessingFilter
     ];
 
     /**
+     * Map of IdP-specific lists of candidate attribute(s) to be used for
+     * the new ID attribute.
+     */
+    private $authorityCandidateMap = [];
+
+    /**
      * The list of candidate attribute(s) to be used to copy the user ID for
      * whitelisted/blacklisted IdP tags.
      */
@@ -139,6 +145,13 @@ class OpaqueSmartID extends ProcessingFilter
             $this->candidates = $config['candidates'];
             if (!is_array($this->candidates)) {
                 throw new Exception('[OpaqueSmartID] authproc configuration error: \'candidates\' should be an array.');
+            }
+        }
+
+        if (array_key_exists('authority_candidate_map', $config)) {
+            $this->authorityCandidateMap = $config['authority_candidate_map'];
+            if (!is_array($this->authorityCandidateMap)) {
+                throw new Exception('[OpaqueSmartID] authproc configuration error: \'authority_candidate_map\' should be an array.');
             }
         }
 
@@ -262,7 +275,19 @@ class OpaqueSmartID extends ProcessingFilter
 
     private function generateUserId($request)
     {
-        foreach ($this->candidates as $idCandidate) {
+        $authority = $this->getAuthority($request);
+        if (empty($authority)) {
+            // This should never happen
+            throw new Exception(
+                'Could not generate user identifier: Unknown authenticating authority'
+            );
+        }
+        if (!empty($this->authorityCandidateMap[$authority])) {
+            $idCandidates = $this->authorityCandidateMap[$authority];
+        } else {
+            $idCandidates = $this->candidates;
+        }
+        foreach ($idCandidates as $idCandidate) {
             if (empty($request['Attributes'][$idCandidate][0])) {
                 continue;
             }
@@ -278,18 +303,14 @@ class OpaqueSmartID extends ProcessingFilter
             Logger::debug(
                 "[OpaqueSmartID] generateUserId: Generating opaque user ID based on " . $idCandidate . ': ' . $idValue
             );
-            $authority = null;
-            if ($this->addAuthority) {
-                $authority = $this->getAuthority($request);
-            }
-            if (!empty($authority) && array_key_exists($authority, $this->authorityMap)) {
+            if ($this->addAuthority && array_key_exists($authority, $this->authorityMap)) {
                 Logger::notice(
                     "[OpaqueSmartID] generateUserId: authorityMap: " . var_export($authority, true)
                     . " = " . var_export($this->authorityMap[$authority], true)
                 );
                 $authority = $this->authorityMap[$authority];
             }
-            if (!empty($authority) && !in_array($authority, $this->skipAuthorityList, true)) {
+            if ($this->addAuthority && !in_array($authority, $this->skipAuthorityList, true)) {
                 Logger::debug("[OpaqueSmartID] generateUserId: authority=" . var_export($authority, true));
                 $smartId = ($this->addCandidate ? $idCandidate . ':' : '') . $idValue . '!' . $authority;
             } else {
