@@ -151,7 +151,9 @@ class OpaqueSmartID extends ProcessingFilter
         if (array_key_exists('authority_candidate_map', $config)) {
             $this->authorityCandidateMap = $config['authority_candidate_map'];
             if (!is_array($this->authorityCandidateMap)) {
-                throw new Exception('[OpaqueSmartID] authproc configuration error: \'authority_candidate_map\' should be an array.');
+                throw new Exception(
+                    '[OpaqueSmartID] authproc configuration error: \'authority_candidate_map\' should be an array.'
+                );
             }
         }
 
