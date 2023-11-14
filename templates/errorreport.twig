@@ -1,0 +1,17 @@
+{% set pagetitle = 'userid:error:header'|trans %}
+{% extends "base.twig" %}
+
+
+{% block content %}
+    <h2>{{ 'userid:error:title' | trans }}</h2>
+    <p>
+        {% trans  with {
+            '%IDPNAME%': idpname
+        } %}{{ "userid:error:descr_" ~ errorCode }}{% endtrans %}
+    </p>
+    <p>
+        <a href="{{ BASEDIR|htmlspecialchars ~ 'saml2/idp/initSLO.php?RelayState=' ~ RESTARTURL|url_encode }}">
+            {{ 'userid:error:retry' | trans }}
+        </a>
+    </p>
+{% endblock %}

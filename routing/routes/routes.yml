@@ -1,0 +1,8 @@
+---
+
+userid-error-report:
+  path: /userid/errorReport
+  defaults: {
+    _controller: '\SimpleSAML\Module\userid\Controller\ErrorReport::main'
+  }
+  methods: [POST]

@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace SimpleSAML\Module\userid\Auth\Process;
 
@@ -23,13 +24,18 @@ use SimpleSAML\Logger;
  */
 class PersistentNameID2Attribute extends ProcessingFilter
 {
+    /**
+     * @var \SimpleSAML\Logger|string
+     * @psalm-var \SimpleSAML\Logger|class-string
+     */
+    protected $logger = Logger::class;
 
     /**
      * The attribute we should save the NameID in.
      *
      * @var string
      */
-    private $attribute;
+    private string $attribute;
 
 
     /**
@@ -37,7 +43,7 @@ class PersistentNameID2Attribute extends ProcessingFilter
      *
      * @var boolean
      */
-    private $nameId;
+    private bool $nameId;
 
 
     /**
@@ -46,7 +52,7 @@ class PersistentNameID2Attribute extends ProcessingFilter
      * @param array $config Configuration information about this filter.
      * @param mixed $reserved For future use.
      */
-    public function __construct($config, $reserved)
+    public function __construct(array $config, $reserved)
     {
         parent::__construct($config, $reserved);
         assert('is_array($config)');
@@ -70,7 +76,7 @@ class PersistentNameID2Attribute extends ProcessingFilter
      *
      * @param array &$state The request state.
      */
-    public function process(&$state)
+    public function process(array &$state): void
     {
         assert('is_array($state)');
 
@@ -82,7 +88,7 @@ class PersistentNameID2Attribute extends ProcessingFilter
             !isset($state['saml:sp:NameID'])
             || $state['saml:sp:NameID']->getFormat() !== Constants::NAMEID_PERSISTENT
         ) {
-            Logger::warning(
+            $this->logger::warning(
                 '[PersistentNameID2Attribute] process: Unable to generate ' . $this->attribute
                 . ' attribute because no persistent NameID was available.'
             );
@@ -93,5 +99,15 @@ class PersistentNameID2Attribute extends ProcessingFilter
         $spNameId = $state['saml:sp:NameID'];
 
         $state['Attributes'][$this->attribute] = [(!$this->nameId) ? $spNameId->getValue() : $spNameId];
+    }
+
+    /**
+     * Inject the \SimpleSAML\Logger dependency.
+     *
+     * @param \SimpleSAML\Logger $logger
+     */
+    public function setLogger(Logger $logger): void
+    {
+        $this->logger = $logger;
     }
 }
