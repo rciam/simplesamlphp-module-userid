@@ -50,14 +50,14 @@ class ErrorReport
 
         $parameters = json_decode(base64_decode(urldecode($parameters)));
 
-        Logger::debug('parameters:' . var_export($parameters, true));
-        
         // redirect the user back to this page to clear the POST request
         $t = new Template($this->config, 'userid:errorreport.twig');
         $t->data['errorCode'] = $errorCode;
         foreach ($parameters as $key => $val) {
             $t->data[$key] = $val;
         }
+
+        Logger::debug('[ErrorReport]::main::data' . var_export($t->data, true));
 
         $twig = $t->getTwig();
         // TWIG does not have an htmlspecialchars function. We will pass in the one from php
