@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
+namespace SimpleSAML\Module\userid\Controller;
 
 use SAML2\Constants as C;
 use SimpleSAML\Assert\Assert;
 use SimpleSAML\Configuration;
-use SimpleSAML\HTTP\RunnableResponse;
-use SimpleSAML\Locale\Translate;
+use SimpleSAML\Logger;
 use SimpleSAML\Module\adfs\IdP\ADFS as ADFS_IdP;
 use SimpleSAML\Session;
 use SimpleSAML\XHTML\Template;
@@ -15,6 +15,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 use Symfony\Component\VarExporter\VarExporter;
+use Twig\TwigFunction;
 
 /**
  * Controller class for the admin module.
@@ -44,9 +45,13 @@ class ErrorReport
      */
     public function main(Request $request, string $as = null): Template
     {
-        $errorCode = $request->request->get('errorCode');
-        $parameters = $request->request->get('parameters');
+        $errorCode = $request->query->get('errorCode');
+        $parameters = $request->query->get('parameters');
 
+        $parameters = json_decode(base64_decode(urldecode($parameters)));
+
+        Logger::debug('parameters:' . var_export($parameters, true));
+        
         // redirect the user back to this page to clear the POST request
         $t = new Template($this->config, 'userid:errorreport.twig');
         $t->data['errorCode'] = $errorCode;

@@ -8,8 +8,7 @@ use SimpleSAML\Assert\Assert;
 use SimpleSAML\Auth\{ProcessingFilter, State};
 use SimpleSAML\Error\Exception;
 use SimpleSAML\Metadata\MetaDataStorageHandler;
-use SimpleSAML\Utils\Config;
-use SimpleSAML\XHTML\Template;
+use SimpleSAML\Utils;
 
 /**
  * This filter is based on the `smartattributes:SmartID` authentication
@@ -20,6 +19,11 @@ use SimpleSAML\XHTML\Template;
  */
 class OpaqueSmartID extends ProcessingFilter
 {
+    /**
+     * @var \SimpleSAML\Utils\Config
+     */
+    protected Utils\Config $configUtils;
+
     /**
      * @var \SimpleSAML\Logger|string
      * @psalm-var \SimpleSAML\Logger|class-string
@@ -219,6 +223,8 @@ class OpaqueSmartID extends ProcessingFilter
                 );
             }
         }
+
+        $this->configUtils = new Utils\Config();
     }
 
     /**
@@ -294,14 +300,20 @@ class OpaqueSmartID extends ProcessingFilter
      */
     private function generateUserId(array $request): ?string
     {
-        $authority = $this->getAuthority($request);
-        if (empty($authority)) {
-            // This should never happen
-            throw new Exception(
-                'Could not generate user identifier: Unknown authenticating authority'
-            );
+        $authority = null;
+        if ($this->addAuthority) {
+            $authority = $this->getAuthority($request);
+
+            if (empty($authority)) {
+                // This should never happen
+                throw new Exception(
+                   'Could not generate user identifier: Unknown authenticating authority'
+                );
+            }
         }
-        if (!empty($this->authorityCandidateMap[$authority])) {
+
+        if (isset($authority)
+            && !empty($this->authorityCandidateMap[$authority])) {
             $idCandidates = $this->authorityCandidateMap[$authority];
         } else {
             $idCandidates = $this->candidates;
@@ -335,7 +347,7 @@ class OpaqueSmartID extends ProcessingFilter
             } else {
                 $smartId = ($this->addCandidate ? $idCandidate . ':' : '') . $idValue;
             }
-            $salt = Config::getSecretSalt();
+            $salt = $this->configUtils->getSecretSalt();
             $hashedUid = hash("sha256", $smartId . '!' . $salt);
             if (isset($this->scope)) {
                 $hashedUid .= '@' . $this->scope;
@@ -429,7 +441,7 @@ class OpaqueSmartID extends ProcessingFilter
     /**
      * @param   array  $idpMetadata
      *
-     * @return string
+     * @return  string  IdPs list of emails
      */
     private function getIdPEmailAddress(array $idpMetadata): string
     {
@@ -555,10 +567,12 @@ class OpaqueSmartID extends ProcessingFilter
     private function showError(string $errorCode, array $parameters): void
     {
         // Save state and redirect
-        $url = Module::getModuleURL('/userid/errorReport');
+        // The path matches the name of the route
+        $url = Module::getModuleURL('userid/error');
         $params = [
           'errorCode' => $errorCode,
-          'parameters' => $parameters
+          // Serialize the parameters
+          'parameters' => urlencode(base64_encode(json_encode($parameters)))
         ];
 
         $httpUtils = new Utils\HTTP();
