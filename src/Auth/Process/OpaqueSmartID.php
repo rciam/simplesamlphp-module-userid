@@ -441,19 +441,27 @@ class OpaqueSmartID extends ProcessingFilter
     /**
      * @param   array  $idpMetadata
      *
-     * @return  string  IdPs list of emails
+     * @return  array  IdPs list of emails
      */
     private function getIdPEmailAddress(array $idpMetadata): string
     {
-        $idpEmailAddress = null;
+        $idpEmailAddress = [];
         if (!empty($idpMetadata['contacts']) && is_array($idpMetadata['contacts'])) {
             foreach ($idpMetadata['contacts'] as $contact) {
                 if (!empty($contact['contactType']) && !empty($contact['emailAddress'])) {
                     if ($contact['contactType'] === 'technical') {
-                        $idpEmailAddress = $contact['emailAddress'];
+                        if(is_array($contact['emailAddress'])) {
+                            $idpEmailAddress = $contact['emailAddress'];
+                        } else {
+                            $idpEmailAddress[0] = $contact['emailAddress'];
+                        }
                         continue;
                     } elseif ($contact['contactType'] === 'support') {
-                        $idpEmailAddress = $contact['emailAddress'];
+                        if(is_array($contact['emailAddress'])) {
+                            $idpEmailAddress = $contact['emailAddress'];
+                        } else {
+                            $idpEmailAddress[0] = $contact['emailAddress'];
+                        }
                         break;
                     }
                 }
