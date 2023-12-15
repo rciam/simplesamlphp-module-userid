@@ -192,11 +192,12 @@ The following configuration options are available:
 
 This table matches the module version with the supported SimpleSAMLphp version.
 
-| Module | SimpleSAMLphp |
-|:------:|:-------------:|
-|  v1.x  |     v1.14     |
-|  v2.x  |     v1.15     |
-|  v3.x  |     v1.17     |
+| Module |  SimpleSAMLphp    |
+|:------:|:-----------------:|
+|  v1.x  |  v1.14            |
+|  v2.x  |  v1.15            |
+|  v3.x  |  v1.17 to v1.19   |
+|  v4.x  |  v2.0 or greater  |
 
 ## License
 
