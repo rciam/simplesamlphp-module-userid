@@ -1,0 +1,17 @@
+{% set pagetitle = ('header'|trans) %}
+{% set header = ('header'|trans) %}
+
+{% extends "base.twig" %}
+
+
+{% block content %}
+    <h2>{{ 'title'|trans }}</h2>
+    <p>
+        {{ ('descr_' ~ errorCode)|trans({'%IDPNAME%': idpname}) }}
+    </p>
+    <p>
+        <a href="{{ basedir ~ 'saml2/idp/initSLO.php?RelayState=' ~ (returnurl|url_encode) }}">
+            {{ 'retry' | trans }}
+        </a>
+    </p>
+{% endblock %}

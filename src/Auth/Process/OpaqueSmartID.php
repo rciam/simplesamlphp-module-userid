@@ -1,15 +1,14 @@
 <?php
+declare(strict_types=1);
 
 namespace SimpleSAML\Module\userid\Auth\Process;
 
-use SimpleSAML\Auth\ProcessingFilter;
-use SimpleSAML\Auth\State;
-use SimpleSAML\Configuration;
+use SimpleSAML\{Configuration, Logger, Module};
+use SimpleSAML\Assert\Assert;
+use SimpleSAML\Auth\{ProcessingFilter, State};
 use SimpleSAML\Error\Exception;
-use SimpleSAML\Logger;
 use SimpleSAML\Metadata\MetaDataStorageHandler;
-use SimpleSAML\Utils\Config;
-use SimpleSAML\XHTML\Template;
+use SimpleSAML\Utils;
 
 /**
  * This filter is based on the `smartattributes:SmartID` authentication
@@ -20,31 +19,47 @@ use SimpleSAML\XHTML\Template;
  */
 class OpaqueSmartID extends ProcessingFilter
 {
+    /**
+     * @var \SimpleSAML\Utils\Config
+     */
+    protected Utils\Config $configUtils;
+
+    /**
+     * @var \SimpleSAML\Logger|string
+     * @psalm-var \SimpleSAML\Logger|class-string
+     */
+    protected $logger = Logger::class;
 
     /**
      * If this option is specified, the filter will be executed only if the
      * authenticating IdP tags match any of the tags in the whitelist.
      */
-    private $idpTagWhitelist = [];
+    private array $idpTagWhitelist = [];
 
     /**
      * If this option is specified, the filter will not be executed if the
      * authenticating IdP tags match any of the tags in the blacklist.
      */
-    private $idpTagBlacklist = [];
+    private array $idpTagBlacklist = [];
 
     // List of IdP entityIDs that should be excluded from the authority
     // part of the user id source.
-    private $skipAuthorityList = [];
+    /**
+     * @var array|mixed
+     */
+    private array $skipAuthorityList = [];
 
     // List of IdP that have modified their entityID.
     // The array keys contain the new entityIDs and the values the old ones
-    private $authorityMap = [];
+    /**
+     * @var array|mixed
+     */
+    private array $authorityMap = [];
 
     /**
      * The list of candidate attribute(s) to be used for the new ID attribute.
      */
-    private $candidates = [
+    private array $candidates = [
         'eduPersonUniqueId',
         'eduPersonPrincipalName',
         'eduPersonTargetedID',
@@ -59,13 +74,13 @@ class OpaqueSmartID extends ProcessingFilter
      * Map of IdP-specific lists of candidate attribute(s) to be used for
      * the new ID attribute.
      */
-    private $authorityCandidateMap = [];
+    private array $authorityCandidateMap = [];
 
     /**
      * The list of candidate attribute(s) to be used to copy the user ID for
      * whitelisted/blacklisted IdP tags.
      */
-    private $cuidCandidates = [
+    private array $cuidCandidates = [
         'voPersonID',
         'subject-id',
         'eduPersonUniqueId',
@@ -74,32 +89,32 @@ class OpaqueSmartID extends ProcessingFilter
     /**
      * The name of the generated ID attribute.
      */
-    private $idAttribute = 'smart_id';
+    private string $idAttribute = 'smart_id';
 
     /**
      * Whether to append the AuthenticatingAuthority, separated by '!'
      * This only works when SSP is used as a gateway.
      */
-    private $addAuthority = true;
+    private bool $addAuthority = true;
 
     /**
      * Whether to prepend the CandidateID, separated by ':'
      */
-    private $addCandidate = true;
+    private bool $addCandidate = true;
 
     /**
      * The scope of the generated ID attribute (optional).
      */
-    private $scope;
+    private string $scope;
 
     /**
      * Whether to assign the generated user identifier to the `UserID`
      * state parameter
      */
-    private $setUserIdAttribute = true;
+    private bool $setUserIdAttribute = true;
 
 
-    public function __construct($config, $reserved)
+    public function __construct(array $config, $reserved)
     {
         parent::__construct($config, $reserved);
 
@@ -208,6 +223,8 @@ class OpaqueSmartID extends ProcessingFilter
                 );
             }
         }
+
+        $this->configUtils = new Utils\Config();
     }
 
     /**
@@ -215,7 +232,7 @@ class OpaqueSmartID extends ProcessingFilter
      *
      * @param array &$request  The request to process
      */
-    public function process(&$request)
+    public function process(array &$request): void
     {
         assert('is_array($request)');
         assert('array_key_exists("Attributes", $request)');
@@ -229,7 +246,7 @@ class OpaqueSmartID extends ProcessingFilter
             !empty($this->idpTagBlacklist)
             && !empty(array_intersect($this->idpTagBlacklist, $idpTags))
         ) {
-            Logger::debug(
+            $this->logger::debug(
                 "[OpaqueSmartID] process: Skipping IdP with tags " . var_export($idpTags, true) . " - blacklisted"
             );
             $this->copyUserId($request, $idpMetadata);
@@ -242,7 +259,7 @@ class OpaqueSmartID extends ProcessingFilter
             !empty($this->idpTagWhitelist)
             && empty(array_intersect($this->idpTagWhitelist, $idpTags))
         ) {
-            Logger::debug(
+            $this->logger::debug(
                 "[OpaqueSmartID] process: Skipping IdP with tags " . var_export($idpTags, true)
                 . " - not it whitelist"
             );
@@ -266,25 +283,37 @@ class OpaqueSmartID extends ProcessingFilter
         $this->showError(
             'NOIDENTIFIER',
             [
-                '%ATTRIBUTES%' => $this->candidates,
-                '%IDPNAME%' => $this->getIdPDisplayName($request),
-                '%IDPEMAILADDRESS%' => $idpEmailAddress,
-                '%BASEDIR%' => $baseUrl,
-                '%RESTARTURL%' => $request[State::RESTART]
+                'attributes' => $this->candidates,
+                'idpname' => $this->getIdPDisplayName($request),
+                'idpemailaddress' => $idpEmailAddress,
+                'basedir' => $baseUrl,
+                'returnurl' => $request[State::RESTART]
             ]
         );
     }
 
-    private function generateUserId($request)
+    /**
+     * @param   array  $request
+     *
+     * @return string|null
+     * @throws Exception
+     */
+    private function generateUserId(array $request): ?string
     {
-        $authority = $this->getAuthority($request);
-        if (empty($authority)) {
-            // This should never happen
-            throw new Exception(
-                'Could not generate user identifier: Unknown authenticating authority'
-            );
+        $authority = null;
+        if ($this->addAuthority) {
+            $authority = $this->getAuthority($request);
+
+            if (empty($authority)) {
+                // This should never happen
+                throw new Exception(
+                   'Could not generate user identifier: Unknown authenticating authority'
+                );
+            }
         }
-        if (!empty($this->authorityCandidateMap[$authority])) {
+
+        if (isset($authority)
+            && !empty($this->authorityCandidateMap[$authority])) {
             $idCandidates = $this->authorityCandidateMap[$authority];
         } else {
             $idCandidates = $this->candidates;
@@ -296,49 +325,58 @@ class OpaqueSmartID extends ProcessingFilter
             try {
                 $idValue = $this->parseUserId($request['Attributes'][$idCandidate][0]);
             } catch (Exception $e) {
-                Logger::debug(
+                $this->logger::debug(
                     "[OpaqueSmartID] generateUserId: Failed to generate user ID based on candidate "
                     . $idCandidate . " attribute: " . $e->getMessage()
                 );
                 continue;
             }
-            Logger::debug(
+            $this->logger::debug(
                 "[OpaqueSmartID] generateUserId: Generating opaque user ID based on " . $idCandidate . ': ' . $idValue
             );
             if ($this->addAuthority && array_key_exists($authority, $this->authorityMap)) {
-                Logger::notice(
+                $this->logger::notice(
                     "[OpaqueSmartID] generateUserId: authorityMap: " . var_export($authority, true)
                     . " = " . var_export($this->authorityMap[$authority], true)
                 );
                 $authority = $this->authorityMap[$authority];
             }
             if ($this->addAuthority && !in_array($authority, $this->skipAuthorityList, true)) {
-                Logger::debug("[OpaqueSmartID] generateUserId: authority=" . var_export($authority, true));
+                $this->logger::debug("[OpaqueSmartID] generateUserId: authority=" . var_export($authority, true));
                 $smartId = ($this->addCandidate ? $idCandidate . ':' : '') . $idValue . '!' . $authority;
             } else {
                 $smartId = ($this->addCandidate ? $idCandidate . ':' : '') . $idValue;
             }
-            $salt = Config::getSecretSalt();
+            $salt = $this->configUtils->getSecretSalt();
             $hashedUid = hash("sha256", $smartId . '!' . $salt);
             if (isset($this->scope)) {
                 $hashedUid .= '@' . $this->scope;
             }
-            Logger::notice(
+            $this->logger::notice(
                 "[OpaqueSmartID] generateUserId: externalId=" . var_export($smartId, true)
                 . ", internalId=" . var_export($hashedUid, true)
             );
             return $hashedUid;
         }
+
+        return null;
     }
 
-    private function copyUserId(&$request, $idpMetadata)
+    /**
+     * @param   array  $request
+     * @param          $idpMetadata
+     *
+     * @return void
+     * @throws \Exception
+     */
+    private function copyUserId(array &$request, $idpMetadata): void
     {
         foreach ($this->cuidCandidates as $idCandidate) {
             if (empty($request['Attributes'][$idCandidate][0])) {
                 continue;
             }
             $idValue = $request['Attributes'][$idCandidate][0];
-            Logger::debug(
+            $this->logger::debug(
                 "[OpaqueSmartID] copyUserId: Copying user ID based on " . $idCandidate . ': ' . $idValue
             );
             $request['UserID'] = $idValue;
@@ -349,16 +387,22 @@ class OpaqueSmartID extends ProcessingFilter
         $this->showError(
             'NOIDENTIFIER',
             [
-                '%ATTRIBUTES%' => $this->cuidCandidates,
-                '%IDPNAME%' => $this->getIdPDisplayName($request),
-                '%IDPEMAILADDRESS%' => $this->getIdPEmailAddress($idpMetadata),
-                '%BASEDIR%' => Configuration::getInstance()->getString('baseurlpath'),
-                '%RESTARTURL%' => $request[State::RESTART]
+                // todo: Check why the %% are there. With twig they are probably redundant
+                'attributes' => $this->cuidCandidates,
+                'idpname' => $this->getIdPDisplayName($request),
+                'idpemailaddress' => $this->getIdPEmailAddress($idpMetadata),
+                'basedir' => Configuration::getInstance()->getString('baseurlpath'),
+                'returnurl' => $request[State::RESTART]
             ]
         );
     }
 
-    private function getAuthority($request)
+    /**
+     * @param   array  $request
+     *
+     * @return array|null
+     */
+    private function getAuthority(array $request): ?array
     {
         if (!empty($request['saml:AuthenticatingAuthority'])) {
             return array_values(array_slice($request['saml:AuthenticatingAuthority'], -1))[0];
@@ -366,7 +410,13 @@ class OpaqueSmartID extends ProcessingFilter
         return null;
     }
 
-    private function parseUserId($attribute)
+    /**
+     * @param $attribute
+     *
+     * @return string
+     * @throws Exception
+     */
+    private function parseUserId($attribute): string
     {
         if (is_string($attribute) || is_int($attribute)) {
             $idValue = $attribute;
@@ -388,17 +438,30 @@ class OpaqueSmartID extends ProcessingFilter
         return $idValue;
     }
 
-    private function getIdPEmailAddress($idpMetadata)
+    /**
+     * @param   array  $idpMetadata
+     *
+     * @return  array  IdPs list of emails
+     */
+    private function getIdPEmailAddress(array $idpMetadata): string
     {
-        $idpEmailAddress = null;
+        $idpEmailAddress = [];
         if (!empty($idpMetadata['contacts']) && is_array($idpMetadata['contacts'])) {
             foreach ($idpMetadata['contacts'] as $contact) {
                 if (!empty($contact['contactType']) && !empty($contact['emailAddress'])) {
                     if ($contact['contactType'] === 'technical') {
-                        $idpEmailAddress = $contact['emailAddress'];
+                        if(is_array($contact['emailAddress'])) {
+                            $idpEmailAddress = $contact['emailAddress'];
+                        } else {
+                            $idpEmailAddress[0] = $contact['emailAddress'];
+                        }
                         continue;
                     } elseif ($contact['contactType'] === 'support') {
-                        $idpEmailAddress = $contact['emailAddress'];
+                        if(is_array($contact['emailAddress'])) {
+                            $idpEmailAddress = $contact['emailAddress'];
+                        } else {
+                            $idpEmailAddress[0] = $contact['emailAddress'];
+                        }
                         break;
                     }
                 }
@@ -416,7 +479,12 @@ class OpaqueSmartID extends ProcessingFilter
         return $idpEmailAddress;
     }
 
-    private function getIdPTags($idpMetadata)
+    /**
+     * @param   array  $idpMetadata
+     *
+     * @return array
+     */
+    private function getIdPTags(array $idpMetadata): array
     {
         if (!empty($idpMetadata['tags'])) {
             return $idpMetadata['tags'];
@@ -425,7 +493,13 @@ class OpaqueSmartID extends ProcessingFilter
         return [];
     }
 
-    private function getIdPDisplayName($request)
+    /**
+     * @param   array  $request
+     *
+     * @return string
+     * @throws \SimpleSAML\Error\MetadataNotFound
+     */
+    private function getIdPDisplayName(array $request): string
     {
         assert('array_key_exists("entityid", $request["Source"])');
 
@@ -463,25 +537,53 @@ class OpaqueSmartID extends ProcessingFilter
         return $idpEntityId;
     }
 
-    private function getIdPMetadata($request)
+    /**
+     * @param   array  $request
+     *
+     * @return array
+     * @throws \SimpleSAML\Error\MetadataNotFound
+     */
+    private function getIdPMetadata(array $request): array
     {
         // If the module is active on a bridge,
         // $request['saml:sp:IdP'] will contain an entry id for the remote IdP.
         if (!empty($request['saml:sp:IdP'])) {
             $idpEntityId = $request['saml:sp:IdP'];
             return MetaDataStorageHandler::getMetadataHandler()->getMetaData($idpEntityId, 'saml20-idp-remote');
-        } else {
-            return $request['Source'];
         }
+
+        return $request['Source'];
     }
 
-    private function showError($errorCode, $parameters)
+    /**
+     * Inject the \SimpleSAML\Logger dependency.
+     *
+     * @param \SimpleSAML\Logger $logger
+     */
+    public function setLogger(Logger $logger): void
     {
-        $globalConfig = Configuration::getInstance();
-        $t = new Template($globalConfig, 'userid:error.tpl.php');
-        $t->data['errorCode'] = $errorCode;
-        $t->data['parameters'] = $parameters;
-        $t->show();
-        exit();
+        $this->logger = $logger;
+    }
+
+    /**
+     * @param   string  $errorCode
+     * @param   array   $parameters
+     *
+     * @return void
+     * @throws \SimpleSAML\Error\ConfigurationError
+     */
+    private function showError(string $errorCode, array $parameters): void
+    {
+        // Save state and redirect
+        // The path matches the name of the route
+        $url = Module::getModuleURL('userid/error');
+        $params = [
+          'errorCode' => $errorCode,
+          // Serialize the parameters
+          'parameters' => urlencode(base64_encode(json_encode($parameters)))
+        ];
+
+        $httpUtils = new Utils\HTTP();
+        $httpUtils->redirectTrustedURL($url, $params);
     }
 }

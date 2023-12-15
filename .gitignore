@@ -475,3 +475,5 @@ composer.lock
 
 # Mega-Linter
 report/*
+
+.idea/**
